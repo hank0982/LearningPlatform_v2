@@ -1,8 +1,8 @@
 import React, { Component}  from 'react';
 import Home from "./pages/Home";
-import GameStart from './pages/GameStart'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import FirebaseHandler from './firebase/handleFirebase'
+import GameStart from './pages/GameStart';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import FirebaseHandler from './firebase/handleFirebase';
 import { addLocaleData, IntlProvider } from 'react-intl';
 
 const elLocaleData = require('react-intl/locale-data/el');
@@ -15,7 +15,7 @@ class App extends Component {
 
   constructor(props){
     super(props);
-    this.firebaseHandler = new FirebaseHandler()
+    this.firebaseHandler = new FirebaseHandler();
   }
   render(){
     return(

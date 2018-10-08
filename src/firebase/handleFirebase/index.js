@@ -11,7 +11,7 @@ class FirebaseHandler {
     return this.database.ref(roomNum).child('on').child('company_'+groupNum).once('value').then((data)=>{
       if(isNull(data.val())){
         return Promise.reject(new Error('Sorry, the room or group number you provide is not valid. Please try again.'));
-      }else{
+      } else {
         return Promise.resolve('success');
       }
     }).catch((e)=>{
@@ -34,7 +34,7 @@ class FirebaseHandler {
     return this.database.ref(roomNum).child('on').child('roomInfo').on('value', (snap)=>{
       if(!isNull(snap.val())){
         cb(snap.val());
-      }else{
+      } else {
         cb(new Error('Room Info is empty'));
       }
     });
