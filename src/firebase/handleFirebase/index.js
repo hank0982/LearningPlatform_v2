@@ -29,6 +29,7 @@ class FirebaseHandler {
     //         return Promise.reject(e)
     //     })
     // }
+
     getRoomInfo(roomNum, cb){
         return this.database.ref(roomNum).child('on').child('roomInfo').on('value', (snap)=>{
             if(!isNull(snap.val())){
@@ -38,6 +39,7 @@ class FirebaseHandler {
             }
         })
     }
+
     getCurrentRound(roomNum, cb){
         return this.database.ref(roomNum).child('on').child('round').child('currentRound').on('value', (snap)=>{
             if(!isNull(snap.val())){
@@ -47,11 +49,13 @@ class FirebaseHandler {
             }
         })
     }
+
     getCompanyListener(roomNum, groupNum, cb){
         return this.database.ref(roomNum).child('on').child(`company_${groupNum}`).on('value', (snap)=>{
             cb(snap.val())
         })
     }
+
     getCompanyName(roomNum, groupNum){
         return this.database.ref(roomNum).child('on').child('company_'+groupNum).child('companyName').once('value').then((snap)=>{
             if(!isNull(snap.val())){
@@ -63,6 +67,7 @@ class FirebaseHandler {
             return Promise.reject(new Error(err));
         })
     }
+
     getBusinessOperationData(roomNum, groupNum, roundNum, marketType){
         const currentRound = roundNum;
         const unitCostPerRounds = {}
@@ -90,6 +95,7 @@ class FirebaseHandler {
             }
         })
     }
+
     getCompetitorOutputData(roomNum, totalFirmNumber, currentRound){
         return this.getFirmNames(roomNum, totalFirmNumber).then((nameList)=>{
             const initAccumProfitPerCompany = (totalFirmNumber) => {
@@ -128,6 +134,7 @@ class FirebaseHandler {
             })
         })     
     }
+
     getFirmNames(roomNum, totalFirmNumber){
         const database = this.database;
         const nameList = {}
@@ -145,11 +152,13 @@ class FirebaseHandler {
             }
         })(1);
     }
+
     isEndSession(roomNum,cb){
         return this.database.ref(roomNum).child('on').child('round').child('endSession').on('value',(snap)=>{
             cb(snap.val())
         })
     }
+    
     getCompanyRoundStatusListener(roomNum, groupNum, cb){
         this.database.ref(roomNum).child('on').child('round').on('value',((data)=>{
             const roundInfo = data.val()
