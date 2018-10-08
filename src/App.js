@@ -14,23 +14,23 @@ addLocaleData(elLocaleData);
 class App extends Component {
 
   constructor(props){
-     super(props);
-     this.firebaseHandler = new FirebaseHandler()
+    super(props);
+    this.firebaseHandler = new FirebaseHandler()
   }
   render(){
-      return(
-        <IntlProvider
-          locale='en'
-          messages={null}
+    return(
+      <IntlProvider
+        locale='en'
+        messages={null}
         >
-          <BrowserRouter>          
-            <Switch>  
-              <Route path="/" exact render={()=><Home firebase={this.firebaseHandler}/>} />
+        <BrowserRouter>          
+          <Switch>  
+            <Route path="/" exact render={()=><Home firebase={this.firebaseHandler}/>} />
               <Route path="/game_start" exact render={()=><GameStart firebase={this.firebaseHandler}/>} />
-            </Switch>
-          </BrowserRouter>
-        </IntlProvider>
-      );
+          </Switch>
+        </BrowserRouter>
+      </IntlProvider>
+    );
   }
 }
 
