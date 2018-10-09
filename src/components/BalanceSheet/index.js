@@ -27,7 +27,7 @@ class BalanceSheet extends Component {
     };
 
     return (
-      <table class="ui striped teal table">
+      <table class="ui inverted grey table">
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell colSpan="2">{title}</Table.HeaderCell>

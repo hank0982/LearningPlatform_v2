@@ -118,7 +118,8 @@ class GameStart extends Component {
         )
       }
     ];
-    if (this.state.redirect) return <Redirect to={this.state.redirectTo} />;
+    if (this.state.redirect)
+      return <Redirect to={this.state.redirectTo} />;
     return (
       <Segment secondary className="background">
         <Grid
