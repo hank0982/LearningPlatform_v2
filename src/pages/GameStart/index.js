@@ -1,5 +1,15 @@
 import React, { Component } from "react";
-import { Button, Form, Tab, Grid, Segment, Header, Icon, Label, Divider } from "semantic-ui-react";
+import {
+  Button,
+  Form,
+  Tab,
+  Grid,
+  Segment,
+  Header,
+  Icon,
+  Label,
+  Divider,
+} from "semantic-ui-react";
 import { Redirect } from "react-router-dom";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
@@ -10,18 +20,18 @@ import CompetitorAnalysis from "./competitorAnalysis";
 import GameForm from "./form";
 class GameStart extends Component {
   static propTypes = {
-    cookies: instanceOf(Cookies).isRequired
+    cookies: instanceOf(Cookies).isRequired,
   };
   constructor(props) {
     super(props);
     this.state = {
-      redirect: false
+      redirect: false,
     };
   }
   redirectTo(path) {
     this.setState({
       redirect: true,
-      redirectTo: path
+      redirectTo: path,
     });
   }
   componentWillMount() {
@@ -34,11 +44,11 @@ class GameStart extends Component {
     } else {
       this.setState({
         roomNum,
-        groupNum
+        groupNum,
       });
       firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
         that.setState({
-          companyInfo
+          companyInfo,
         });
       });
       firebase.getRoomInfo(roomNum, roomInfo => {
@@ -63,11 +73,11 @@ class GameStart extends Component {
       currentRound,
       endSession,
       companyName,
-      companyInfo
+      companyInfo,
     } = this.state;
     const { marketType, firmNum } = roomInfo || {
       marketType: null,
-      firmNum: null
+      firmNum: null,
     };
     const { firebase } = this.props;
     const panes = [
@@ -75,7 +85,7 @@ class GameStart extends Component {
         menuItem: "General Intro",
         render: () => {
           return roomInfo ? (
-            <Tab.Pane  style={{ height: "500px", overflowY: "scroll" }}>
+            <Tab.Pane style={{ height: "500px", overflowY: "scroll" }}>
               <GeneralIntro
                 gameRule={roomInfo["gameRule"]}
                 desOfFirms={roomInfo["descriptionOfFirms"]}
@@ -86,7 +96,7 @@ class GameStart extends Component {
           ) : (
             <Tab.Pane loading />
           );
-        }
+        },
       },
       {
         menuItem: "Company Intro",
@@ -94,7 +104,7 @@ class GameStart extends Component {
           <Tab.Pane style={{ height: "500px", overflowY: "scroll" }}>
             <CompanyIntro companyInfo={companyInfo} />
           </Tab.Pane>
-        )
+        ),
       },
       {
         menuItem: "Business Op. Anaylsis",
@@ -115,11 +125,10 @@ class GameStart extends Component {
               roundNum={endSession ? currentRound : currentRound - 1}
             />
           </Tab.Pane>
-        )
-      }
+        ),
+      },
     ];
-    if (this.state.redirect)
-      return <Redirect to={this.state.redirectTo} />;
+    if (this.state.redirect) return <Redirect to={this.state.redirectTo} />;
     return (
       <Segment secondary className="background">
         <Grid
@@ -151,15 +160,18 @@ class GameStart extends Component {
             </Grid.Column>
           </Grid.Row>
           <Grid.Row textAlign="center" centered>
-        <a class="ui yellow tag label">Room Num
-          <Label.Detail>{roomNum}</Label.Detail>
-        </a>
-        <a class="ui olive tag label">Company
-          <Label.Detail>{companyName}</Label.Detail>
-        </a>
-        <a class="ui blue tag label">Round
-          <Label.Detail>{roomInfo && roomInfo.roundNum}</Label.Detail>
-        </a>
+            <a class="ui yellow tag label">
+              Room Num
+              <Label.Detail>{roomNum}</Label.Detail>
+            </a>
+            <a class="ui olive tag label">
+              Company
+              <Label.Detail>{companyName}</Label.Detail>
+            </a>
+            <a class="ui blue tag label">
+              Round
+              <Label.Detail>{roomInfo && roomInfo.roundNum}</Label.Detail>
+            </a>
           </Grid.Row>
         </Grid>
       </Segment>

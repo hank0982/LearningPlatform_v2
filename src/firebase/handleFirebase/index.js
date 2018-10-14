@@ -17,8 +17,8 @@ class FirebaseHandler {
         if (isNull(data.val())) {
           return Promise.reject(
             new Error(
-              "Sorry, the room or group number you provide is not valid. Please try again."
-            )
+              "Sorry, the room or group number you provide is not valid. Please try again.",
+            ),
           );
         } else {
           return Promise.resolve("success");
@@ -28,16 +28,27 @@ class FirebaseHandler {
         return Promise.reject(e);
       });
   }
-  // getRoomInfo(roomNum){
-  //     return this.database.ref(roomNum).child('on').child('roomInfo').once('value').then((data)=>{
-  //         if(isNull(data.val())){
-  //             return Promise.reject(new Error('Sorry, the room number you provide is not valid. Please try again'))
-  //         }else{
-  //             return Promise.resolve(data.val())
-  //         }
-  //     }).catch((e)=>{
-  //         return Promise.reject(e)
+
+  // getRoomInfo(roomNum) {
+  //   return this.database
+  //     .ref(roomNum)
+  //     .child("on")
+  //     .child("roomInfo")
+  //     .once("value")
+  //     .then(data => {
+  //       if (isNull(data.val())) {
+  //         return Promise.reject(
+  //           new Error(
+  //             "Sorry, the room number you provide is not valid. Please try again",
+  //           ),
+  //         );
+  //       } else {
+  //         return Promise.resolve(data.val());
+  //       }
   //     })
+  //     .catch(e => {
+  //       return Promise.reject(e);
+  //     });
   // }
 
   getRoomInfo(roomNum, cb) {
@@ -130,7 +141,7 @@ class FirebaseHandler {
           unitCostPerRounds,
           revenuePerRounds,
           profitPerRounds,
-          pricePerRounds
+          pricePerRounds,
         };
       });
   }
@@ -164,11 +175,11 @@ class FirebaseHandler {
           for (var i = 1; i <= currentRound; i++) {
             for (var t = 1; t <= parseInt(totalFirmNumber); t++) {
               roundArray[nameList[t]][i] = parseInt(
-                informationOfEachRound["round" + i][t].quantityProduction
+                informationOfEachRound["round" + i][t].quantityProduction,
               );
               if (i == currentRound) {
                 profitPerCompany[nameList[t]] = parseFloat(
-                  informationOfEachRound["round" + i][t].profit
+                  informationOfEachRound["round" + i][t].profit,
                 );
               }
               accumprofitPerCompany[nameList[t]] =
@@ -179,7 +190,7 @@ class FirebaseHandler {
           return {
             profitPerCompany,
             accumprofitPerCompany,
-            roundArray
+            roundArray,
           };
         });
     });

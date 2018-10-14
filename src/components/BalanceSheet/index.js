@@ -2,17 +2,17 @@ import React, { Component } from "react";
 import { Table } from "semantic-ui-react";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
-import numeral from "numeral";  // For thousand separators
+import numeral from "numeral"; // For thousand separators
 
 class BalanceSheet extends Component {
   static propTypes = {
-    cookies: instanceOf(Cookies).isRequired
+    cookies: instanceOf(Cookies).isRequired,
   };
   constructor(props) {
     super(props);
   }
 
-  // Generate table for game_start/Company Intro/Balance Sheet
+  // Generate table for /game_start/Company Intro/Balance Sheet
   // numeral(xyz).format("0,0") for thousand separators
   generateTable(title, contentArray) {
     const generateRow = (title, content) => {
@@ -27,7 +27,7 @@ class BalanceSheet extends Component {
     };
 
     return (
-      <table class="ui inverted grey table">
+      <table class="ui teal striped table">
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell colSpan="2">{title}</Table.HeaderCell>
@@ -42,23 +42,27 @@ class BalanceSheet extends Component {
     );
   }
   render() {
-    const { companyInfo } = this.props;
-    const totalAsset = Number(companyInfo.assetCash)
-          + Number(companyInfo.assetPPE)
-          + Number(companyInfo.assetLand);
-    const totalRetainedEarnings = Number(companyInfo.beg) + Number(companyInfo.netIncome);
-    const totalEquity = totalRetainedEarnings + Number(companyInfo.shareCapital);
+    // var companyInfo = this.props.companyInfo
+    const { companyInfo } = this.props; // destructuring assignment ES6
+    const totalAsset =
+      Number(companyInfo.assetCash) +
+      Number(companyInfo.assetPPE) +
+      Number(companyInfo.assetLand);
+    const totalRetainedEarnings =
+      Number(companyInfo.beg) + Number(companyInfo.netIncome);
+    const totalEquity =
+      totalRetainedEarnings + Number(companyInfo.shareCapital);
     return (
       <div>
         {this.generateTable("Asset", [
           ["Cash", companyInfo.assetCash],
           ["Plant, Property and Equipment", companyInfo.assetPPE],
           ["Land", companyInfo.assetLand],
-          ["Total Asset", totalAsset]
+          ["Total Asset", totalAsset],
         ])}
         {this.generateTable("Liability", [
           ["Borrowing", companyInfo.liabilitiesBorrwoing],
-          ["Total Liabilities	", companyInfo.liabilitiesBorrwoing]
+          ["Total Liabilities	", companyInfo.liabilitiesBorrwoing],
         ])}
         {this.generateTable("Equity", [
           ["Share Capital", companyInfo.shareCapital],
@@ -66,7 +70,7 @@ class BalanceSheet extends Component {
           ["Beg.", companyInfo.beg],
           ["Net income", companyInfo.netIncome],
           ["Total Retained Earnings", totalRetainedEarnings],
-          ["Total Equity", totalEquity]
+          ["Total Equity", totalEquity],
         ])}
       </div>
     );
