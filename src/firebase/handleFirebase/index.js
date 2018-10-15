@@ -2,6 +2,7 @@ import firebase from "firebase/app";
 import "firebase/database";
 import config from "./key";
 import { isNull } from "util";
+
 class FirebaseHandler {
   constructor() {
     this.database = firebase.initializeApp(config, "database").database();
@@ -51,6 +52,9 @@ class FirebaseHandler {
   //     });
   // }
 
+
+  // cb = callback
+  // getRoomInfo ('1234', val => {console.log(val)})
   getRoomInfo(roomNum, cb) {
     return this.database
       .ref(roomNum)
@@ -177,7 +181,7 @@ class FirebaseHandler {
               roundArray[nameList[t]][i] = parseInt(
                 informationOfEachRound["round" + i][t].quantityProduction,
               );
-              if (i == currentRound) {
+              if (i === currentRound) {
                 profitPerCompany[nameList[t]] = parseFloat(
                   informationOfEachRound["round" + i][t].profit,
                 );

@@ -36,34 +36,34 @@ class GameForm extends Component {
       return (
         <Segment>
           <p style={{ whiteSpace: "pre-line" }}>
-            {companyInfo.constant == 0 ? null : companyInfo.constant}
-            {companyInfo.constant == 0 || companyInfo.coefficientOne == 0
+            {companyInfo.constant === 0 ? null : companyInfo.constant}
+            {companyInfo.constant === 0 || companyInfo.coefficientOne === 0
               ? null
               : " + "}
-            {companyInfo.coefficientOne == 0
+            {companyInfo.coefficientOne === 0
               ? null
-              : companyInfo.coefficientOne == 1
+              : companyInfo.coefficientOne === 1
                 ? "q"
                 : companyInfo.coefficientOne + "q"}
-            {companyInfo.coefficientOne == 0 || companyInfo.coefficientTwo == 0
+            {companyInfo.coefficientOne === 0 || companyInfo.coefficientTwo === 0
               ? null
               : " + "}
-            {companyInfo.coefficientTwo == 0
+            {companyInfo.coefficientTwo === 0
               ? null
-              : companyInfo.coefficientTwo == 1
+              : companyInfo.coefficientTwo === 1
                 ? "q"
                 : companyInfo.coefficientTwo + "q"}
-            {companyInfo.coefficientTwo == 0 ? null : <sup>2</sup>}
-            {companyInfo.coefficientTwo == 0 ||
-            companyInfo.coefficientThree == 0
+            {companyInfo.coefficientTwo === 0 ? null : <sup>2</sup>}
+            {companyInfo.coefficientTwo === 0 ||
+            companyInfo.coefficientThree === 0
               ? null
               : " + "}
-            {companyInfo.coefficientThree == 0
+            {companyInfo.coefficientThree === 0
               ? null
-              : companyInfo.coefficientThree == 1
+              : companyInfo.coefficientThree === 1
                 ? "q"
                 : companyInfo.coefficientThree + "q"}
-            {companyInfo.coefficientThree == 0 ? null : <sup>3</sup>}
+            {companyInfo.coefficientThree === 0 ? null : <sup>3</sup>}
           </p>{" "}
         </Segment>
       );
@@ -95,7 +95,7 @@ class GameForm extends Component {
         <Header as="h2" color="teal">
           <Header.Content>Your Decision</Header.Content>
         </Header>
-        {(roundInfo && roundInfo.submit == false) || !roundInfo ? (
+        {(roundInfo && roundInfo.submit === false) || !roundInfo ? (
           <Form>
             <Form.Field>
               <label>Quantity of Your Production</label>

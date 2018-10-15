@@ -18,6 +18,7 @@ import CompanyIntro from "./companyIntro";
 import BusinessOpAnalysis from "./businessOpAnalysis";
 import CompetitorAnalysis from "./competitorAnalysis";
 import GameForm from "./form";
+
 class GameStart extends Component {
   static propTypes = {
     cookies: instanceOf(Cookies).isRequired,
@@ -48,7 +49,7 @@ class GameStart extends Component {
       });
       firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
         that.setState({
-          companyInfo,
+          companyInfo,  // companyInfo: companyInfo
         });
       });
       firebase.getRoomInfo(roomNum, roomInfo => {
@@ -160,15 +161,15 @@ class GameStart extends Component {
             </Grid.Column>
           </Grid.Row>
           <Grid.Row textAlign="center" centered>
-            <a class="ui yellow tag label">
+            <a className="ui yellow tag label">
               Room Num
               <Label.Detail>{roomNum}</Label.Detail>
             </a>
-            <a class="ui olive tag label">
+            <a className="ui olive tag label">
               Company
               <Label.Detail>{companyName}</Label.Detail>
             </a>
-            <a class="ui blue tag label">
+            <a className="ui blue tag label">
               Round
               <Label.Detail>{roomInfo && roomInfo.roundNum}</Label.Detail>
             </a>
