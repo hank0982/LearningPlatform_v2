@@ -5,13 +5,13 @@ import { withCookies, Cookies } from "react-cookie";
 
 class GameForm extends Component {
   static propTypes = {
-    cookies: instanceOf(Cookies).isRequired,
+    cookies: instanceOf(Cookies).isRequired
   };
   constructor(props) {
     super(props);
     this.state = {
       companyInfo: null,
-      roundInfo: null,
+      roundInfo: null
     };
   }
   componentWillMount() {
@@ -19,16 +19,18 @@ class GameForm extends Component {
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
-        companyInfo,
+        companyInfo
       });
     });
     firebase.getCompanyRoundStatusListener(roomNum, groupNum, data => {
       console.log("change", data);
       that.setState({
-        roundInfo: data,
+        roundInfo: data
       });
     });
   }
+
+  // Production Cost formula
   renderTotalCost() {
     let { companyInfo } = this.state;
     console.log(companyInfo);
@@ -43,16 +45,17 @@ class GameForm extends Component {
             {companyInfo.coefficientOne === 0
               ? null
               : companyInfo.coefficientOne === 1
-                ? "q"
-                : companyInfo.coefficientOne + "q"}
-            {companyInfo.coefficientOne === 0 || companyInfo.coefficientTwo === 0
+              ? "q"
+              : companyInfo.coefficientOne + "q"}
+            {companyInfo.coefficientOne === 0 ||
+            companyInfo.coefficientTwo === 0
               ? null
               : " + "}
             {companyInfo.coefficientTwo === 0
               ? null
               : companyInfo.coefficientTwo === 1
-                ? "q"
-                : companyInfo.coefficientTwo + "q"}
+              ? "q"
+              : companyInfo.coefficientTwo + "q"}
             {companyInfo.coefficientTwo === 0 ? null : <sup>2</sup>}
             {companyInfo.coefficientTwo === 0 ||
             companyInfo.coefficientThree === 0
@@ -61,8 +64,8 @@ class GameForm extends Component {
             {companyInfo.coefficientThree === 0
               ? null
               : companyInfo.coefficientThree === 1
-                ? "q"
-                : companyInfo.coefficientThree + "q"}
+              ? "q"
+              : companyInfo.coefficientThree + "q"}
             {companyInfo.coefficientThree === 0 ? null : <sup>3</sup>}
           </p>{" "}
         </Segment>
@@ -90,8 +93,18 @@ class GameForm extends Component {
         </Segment>
         <Header as="h2" color="teal">
           <Header.Content>Additional Functions</Header.Content>
+          <Form>
+            {/* Alter `companyInfo.liabilitiesBorrwoing` */}
+            <Form.Field>
+              <label>Borrow</label>
+              <input placeholder="Borrowing Amount (in USD)" />
+            </Form.Field>
+            <Form.Field>
+              <label>Return</label>
+              <input placeholder="Returning Amount (in USD)" />
+            </Form.Field>
+          </Form>
         </Header>
-        <Segment />
         <Header as="h2" color="teal">
           <Header.Content>Your Decision</Header.Content>
         </Header>
@@ -101,7 +114,8 @@ class GameForm extends Component {
               <label>Quantity of Your Production</label>
               <input placeholder="Quantity" />
             </Form.Field>
-            <Button type="submit" color="teal">
+            <Button size="tiny" type="submit" color="teal">
+            <i class="sign in icon"></i>
               Submit!
             </Button>
           </Form>
