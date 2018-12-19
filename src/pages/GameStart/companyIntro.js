@@ -8,13 +8,16 @@ class CompanyIntro extends Component {
   static propTypes = {
     cookies: instanceOf(Cookies).isRequired
   };
+
   constructor(props) {
     super(props);
   }
 
   render() {
+    // Equivalent to: var companyInfo = this.props.companyInfo;
     const { companyInfo } = this.props;
     if (!companyInfo) {
+      // No company info yet -> Loading...
       return (
         <Dimmer active>
           <Loader>Loading</Loader>

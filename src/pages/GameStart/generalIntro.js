@@ -7,9 +7,11 @@ class GeneralIntro extends Component {
   static propTypes = {
     cookies: instanceOf(Cookies).isRequired
   };
+
   constructor(props){
-    super(props);   
+    super(props); 
   }
+
   render(){
     const { gameRule, desOfFirms, marketDes, goalOfFirms } = this.props
     return(

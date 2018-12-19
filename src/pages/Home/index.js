@@ -7,7 +7,7 @@ import {
   Segment,
   Header,
   Icon,
-  Message,
+  Message
 } from "semantic-ui-react";
 import { Redirect } from "react-router-dom";
 import { instanceOf } from "prop-types";
@@ -15,7 +15,7 @@ import { withCookies, Cookies } from "react-cookie";
 
 class Home extends Component {
   static propTypes = {
-    cookies: instanceOf(Cookies).isRequired,
+    cookies: instanceOf(Cookies).isRequired
   };
   constructor(props) {
     super(props);
@@ -25,7 +25,7 @@ class Home extends Component {
       groupNum: "",
       message: "",
       un_set: true,
-      redirectTo: "/",
+      redirectTo: "/"
     };
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -37,22 +37,22 @@ class Home extends Component {
     this.setState(
       {
         roomNum: cookies.get("roomNum", { path: "/" }) || "",
-        groupNum: cookies.get("groupNum", { path: "/" }) || "",
+        groupNum: cookies.get("groupNum", { path: "/" }) || ""
       },
       () => {
         console.log(this.state);
-      },
+      }
     );
   }
   showErrorMessage(message) {
     this.setState({
-      message,
+      message
     });
   }
   redirectTo(path) {
     this.setState({
       un_set: false,
-      redirectTo: path,
+      redirectTo: path
     });
   }
   handleInputChange(event) {
@@ -60,7 +60,7 @@ class Home extends Component {
     const value = target.type === "checkbox" ? target.checked : target.value;
     const name = target.name;
     this.setState({
-      [name]: value,
+      [name]: value
     });
   }
   handleSubmit(event) {
@@ -68,7 +68,7 @@ class Home extends Component {
     const { cookies, firebase } = this.props;
     const { roomNum, groupNum } = this.state;
     const that = this;
-    const { name } = event.target;
+    const { name } = event.target;  // name = event.target.name
     const target = event.target;
     cookies.set("roomNum", roomNum, { path: "/" });
     cookies.set("groupNum", groupNum, { path: "/" });
@@ -184,7 +184,7 @@ class Home extends Component {
           </li>
           <li>
             <span class="c6">
-              Acct concept will be used to monitor the performance of company
+              ACCT concept will be used to monitor the performance of company
             </span>
           </li>
         </ol>
@@ -208,11 +208,11 @@ class Home extends Component {
         </p>
         <ul>
           <li>
-            <span class="c1">Every</span>
+            <span class="c1">Every </span>
             firm
-            <span class="c1"> can borrow</span>
+            <span class="c1"> can borrow </span>
             money
-            <span class="c1"> from the bank (teacher) once in every</span>
+            <span class="c1"> from the bank (teacher) once in every </span>
             month
             <span class="c1"> (no requirement for asking in the first</span>
             round
@@ -445,7 +445,7 @@ class Home extends Component {
     const panes = [
       { menuItem: "Student", render: () => this.renderStudentPane() },
       { menuItem: "Teacher", render: () => this.renderTeacherPane() },
-      { menuItem: "About", render: () => this.renderAboutPane() },
+      { menuItem: "About", render: () => this.renderAboutPane() }
     ];
     if (this.state.un_set) {
       return (

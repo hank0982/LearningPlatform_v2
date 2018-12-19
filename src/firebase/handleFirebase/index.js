@@ -1,3 +1,5 @@
+// FirebaseHandler
+
 import firebase from "firebase/app";
 import "firebase/database";
 import config from "./key";
@@ -8,6 +10,7 @@ class FirebaseHandler {
     this.database = firebase.initializeApp(config, "database").database();
     this.getFirmNames = this.getFirmNames.bind(this);
   }
+
   isRoomExist(roomNum, groupNum) {
     return this.database
       .ref(roomNum)
@@ -18,8 +21,8 @@ class FirebaseHandler {
         if (isNull(data.val())) {
           return Promise.reject(
             new Error(
-              "Sorry, the room or group number you provide is not valid. Please try again.",
-            ),
+              "Sorry, the room or group number you provide is not valid. Please try again."
+            )
           );
         } else {
           return Promise.resolve("success");
@@ -51,7 +54,6 @@ class FirebaseHandler {
   //       return Promise.reject(e);
   //     });
   // }
-
 
   // cb = callback
   // getRoomInfo ('1234', val => {console.log(val)})
@@ -145,7 +147,7 @@ class FirebaseHandler {
           unitCostPerRounds,
           revenuePerRounds,
           profitPerRounds,
-          pricePerRounds,
+          pricePerRounds
         };
       });
   }
@@ -179,11 +181,11 @@ class FirebaseHandler {
           for (var i = 1; i <= currentRound; i++) {
             for (var t = 1; t <= parseInt(totalFirmNumber); t++) {
               roundArray[nameList[t]][i] = parseInt(
-                informationOfEachRound["round" + i][t].quantityProduction,
+                informationOfEachRound["round" + i][t].quantityProduction
               );
               if (i === currentRound) {
                 profitPerCompany[nameList[t]] = parseFloat(
-                  informationOfEachRound["round" + i][t].profit,
+                  informationOfEachRound["round" + i][t].profit
                 );
               }
               accumprofitPerCompany[nameList[t]] =
@@ -194,7 +196,7 @@ class FirebaseHandler {
           return {
             profitPerCompany,
             accumprofitPerCompany,
-            roundArray,
+            roundArray
           };
         });
     });
