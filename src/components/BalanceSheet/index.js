@@ -1,3 +1,5 @@
+// BalanceSheet
+
 import React, { Component } from "react";
 import { Table } from "semantic-ui-react";
 import { instanceOf } from "prop-types";
@@ -6,13 +8,14 @@ import numeral from "numeral"; // For thousand separators
 
 class BalanceSheet extends Component {
   static propTypes = {
-    cookies: instanceOf(Cookies).isRequired,
+    cookies: instanceOf(Cookies).isRequired
   };
+
   constructor(props) {
     super(props);
   }
 
-  // Generate table for /game_start/Company Intro/Balance Sheet
+  // Generate table for “.../game_start/Company Intro/Balance Sheet”
   // numeral(xyz).format("0,0") for thousand separators
   generateTable(title, contentArray) {
     const generateRow = (title, content) => {
@@ -42,8 +45,9 @@ class BalanceSheet extends Component {
     );
   }
   render() {
-    // var companyInfo = this.props.companyInfo
-    const { companyInfo } = this.props; // destructuring assignment ES6
+    // Equivalent to: var companyInfo = this.props.companyInfo
+    // We can from now on use `companyInfo` instead of `this.props.companyInfo`
+    const { companyInfo } = this.props; // destructuring assignment (ES6)
     const totalAsset =
       Number(companyInfo.assetCash) +
       Number(companyInfo.assetPPE) +
@@ -58,11 +62,12 @@ class BalanceSheet extends Component {
           ["Cash", companyInfo.assetCash],
           ["Plant, Property and Equipment", companyInfo.assetPPE],
           ["Land", companyInfo.assetLand],
-          ["Total Asset", totalAsset],
+          ["Total Asset", totalAsset]
         ])}
         {this.generateTable("Liability", [
-          ["Borrowing", companyInfo.liabilitiesBorrwoing],
-          ["Total Liabilities	", companyInfo.liabilitiesBorrwoing],
+          ["Note Payable", companyInfo.liabilitiesBorrwoing],
+          ["Interest Payable", companyInfo.liabilitiesBorrwoing],
+          ["Total Liabilities	", companyInfo.liabilitiesBorrwoing]
         ])}
         {this.generateTable("Equity", [
           ["Share Capital", companyInfo.shareCapital],
@@ -70,7 +75,7 @@ class BalanceSheet extends Component {
           ["Beg.", companyInfo.beg],
           ["Net income", companyInfo.netIncome],
           ["Total Retained Earnings", totalRetainedEarnings],
-          ["Total Equity", totalEquity],
+          ["Total Equity", totalEquity]
         ])}
       </div>
     );
