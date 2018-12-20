@@ -11,8 +11,15 @@ class GameForm extends Component {
     super(props);
     this.state = {
       companyInfo: null,
-      roundInfo: null
+      roundInfo: null,
+      borrowing: "",
+      returning: "",
+      decision: ""
     };
+    this.handleBorrow = this.handleBorrow.bind(this);
+    this.handleReturn = this.handleReturn.bind(this);
+    this.handleDecision = this.handleDecision.bind(this);
+    this.submitDecision = this.submitDecision.bind(this);
   }
   componentWillMount() {
     const { firebase, roomNum, groupNum, roomInfo } = this.props;
@@ -74,6 +81,38 @@ class GameForm extends Component {
       return null;
     }
   }
+
+  // When player inputs "Borrow",
+  // set `this.state.borrowing` to what s/he types
+  handleBorrow(e) {
+    this.setState({
+      borrowing: e.target.value
+    });
+  }
+
+  handleReturn(e) {
+    this.setState({
+      returning: e.target.value
+    });
+  }
+
+  handleDecision(e) {
+    this.setState({
+      decision: e.target.value
+    });
+  }
+
+  submitDecision() {
+    // DOING
+
+    // Set all input boxes back to empty strings
+    this.setState({
+      borrowing: "",
+      returning: "",
+      decision: ""
+    });
+  }
+
   render() {
     const { companyInfo, roundInfo } = this.state;
     console.log(roundInfo);
@@ -97,11 +136,19 @@ class GameForm extends Component {
             {/* Alter `companyInfo.liabilitiesBorrwoing` */}
             <Form.Field>
               <label>Borrow</label>
-              <input placeholder="Borrowing Amount (in USD)" />
+              <input
+                placeholder="Borrowing Amount (in USD)"
+                value={this.state.borrowing}
+                onChange={this.handleBorrow}
+              />
             </Form.Field>
             <Form.Field>
               <label>Return</label>
-              <input placeholder="Returning Amount (in USD)" />
+              <input
+                placeholder="Returning Amount (in USD)"
+                value={this.state.returning}
+                onChange={this.handleReturn}
+              />
             </Form.Field>
           </Form>
         </Header>
@@ -112,10 +159,18 @@ class GameForm extends Component {
           <Form>
             <Form.Field>
               <label>Quantity of Your Production</label>
-              <input placeholder="Quantity" />
+              <input
+                placeholder="Quantity"
+                value={this.state.decision}
+                onChange={this.handleDecision}
+              />
             </Form.Field>
-            <Button size="tiny" type="submit" color="teal">
-            <i class="sign in icon"></i>
+            <Button
+              size="tiny"
+              type="submit"
+              color="teal"
+              onClick={this.submitDecision}>
+              <i class="sign in icon" />
               Submit!
             </Button>
           </Form>
