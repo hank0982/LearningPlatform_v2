@@ -96,6 +96,10 @@ class FirebaseHandler {
       });
   }
 
+  pushCompanyInfo(roomNum, groupNum, temp) {
+    this.database.ref(roomNum).set(temp);
+  }
+
   getCompanyName(roomNum, groupNum) {
     return this.database
       .ref(roomNum)
@@ -151,6 +155,27 @@ class FirebaseHandler {
         };
       });
   }
+
+  // DOING
+  getRoundListener() {
+
+  }
+
+   // DOING: calculate
+  calculateUnitPrice(roomNum, groupNum, roundNum, marketType) {
+      return this.database
+      .ref(roomNum)
+      .child('on').child(`company_${groupNum}`).once("value").then(function(snap){
+          let companyInfo = snap.val();
+          //let result = companyInfo.constant-companyInfo.slope;
+          //return result;
+      });
+  }
+
+  
+  // calculateUnitCost(roomNum, groupNum, roundNum, marketType)
+  // calculateProfit(roomNum, groupNum, roundNum, marketType)
+  // calculateRevenue(roomNum, groupNum, roundNum, marketType)
 
   getCompetitorOutputData(roomNum, totalFirmNumber, currentRound) {
     return this.getFirmNames(roomNum, totalFirmNumber).then(nameList => {
