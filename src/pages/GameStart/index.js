@@ -1,12 +1,8 @@
 import React, { Component } from "react";
 import {
-  Button,
-  Form,
   Tab,
   Grid,
   Segment,
-  Header,
-  Icon,
   Label,
   Divider
 } from "semantic-ui-react";
