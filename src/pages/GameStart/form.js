@@ -103,7 +103,19 @@ class GameForm extends Component {
   }
 
   submitDecision() {
-    // DOING
+    // load old to temp
+    var temp = this.state.companyInfo;
+
+    // update temp partially
+    temp.liabilitiesBorrwoing = this.state.borrowing;
+    temp.decision = this.state.decision;
+
+    // push value to Firebase
+    this.props.firebase.pushCompanyInfo(
+      this.props.roomNum,
+      this.props.groupNum,
+      temp
+    );
 
     // Set all input boxes back to empty strings
     this.setState({
