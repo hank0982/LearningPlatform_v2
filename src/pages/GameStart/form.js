@@ -11,18 +11,16 @@ class GameForm extends Component {
     super(props);
     this.state = {
       companyInfo: null,
-      roundInfo: null,
+      companyRoundInfo: null,
       borrowing: "",
       returning: "",
       decision: ""
     };
-    this.handleBorrow = this.handleBorrow.bind(this);
-    this.handleReturn = this.handleReturn.bind(this);
-    this.handleDecision = this.handleDecision.bind(this);
+    this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
   }
   componentWillMount() {
-    const { firebase, roomNum, groupNum, roomInfo } = this.props;
+    const { firebase, roomNum, groupNum, roomInfo} = this.props;
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
@@ -30,11 +28,11 @@ class GameForm extends Component {
       });
     });
     firebase.getCompanyRoundStatusListener(roomNum, groupNum, data => {
-      console.log("change", data);
       that.setState({
-        roundInfo: data
+        companyRoundInfo: data
       });
     });
+
   }
 
   // Production Cost formula
@@ -84,38 +82,25 @@ class GameForm extends Component {
 
   // When player inputs "Borrow",
   // set `this.state.borrowing` to what s/he types
-  handleBorrow(e) {
+  handleInputFields(e){
     this.setState({
-      borrowing: e.target.value
-    });
+      [e.target.name]: e.target.value
+    })
+    console.log(e.target.name + " change to " +　e.target.value)
   }
-
-  handleReturn(e) {
-    this.setState({
-      returning: e.target.value
-    });
-  }
-
-  handleDecision(e) {
-    this.setState({
-      decision: e.target.value
-    });
-  }
-
-  submitDecision() {
-    // load old to temp
-    var temp = this.state.companyInfo;
-
-    // update temp partially
-    temp.liabilitiesBorrwoing = this.state.borrowing;
-    temp.decision = this.state.decision;
-
-    // push value to Firebase
-    this.props.firebase.pushCompanyInfo(
-      this.props.roomNum,
-      this.props.groupNum,
-      temp
-    );
+  
+  submitDecision(e) {
+    e.preventDefault();
+    const {borrowing, returning, decision} = this.state;
+    const { firebase, roomNum, groupNum, roomInfo, currentRound} = this.props;
+    firebase.pushCompanyDecision(
+      roomNum,
+      groupNum,
+      currentRound,
+      returning,
+      borrowing,
+      decision
+    )
 
     // Set all input boxes back to empty strings
     this.setState({
@@ -126,8 +111,8 @@ class GameForm extends Component {
   }
 
   render() {
-    const { companyInfo, roundInfo } = this.state;
-    console.log(roundInfo);
+    const { companyInfo, companyRoundInfo } = this.state;
+    console.log(companyRoundInfo);
     return (
       <div>
         <Header as="h2" color="teal">
@@ -150,16 +135,18 @@ class GameForm extends Component {
               <label>Borrow</label>
               <input
                 placeholder="Borrowing Amount (in USD)"
+                name="borrowing"
                 value={this.state.borrowing}
-                onChange={this.handleBorrow}
+                onChange={this.handleInputFields}
               />
             </Form.Field>
             <Form.Field>
               <label>Return</label>
               <input
                 placeholder="Returning Amount (in USD)"
+                name="returning"
                 value={this.state.returning}
-                onChange={this.handleReturn}
+                onChange={this.handleInputFields}
               />
             </Form.Field>
           </Form>
@@ -167,14 +154,15 @@ class GameForm extends Component {
         <Header as="h2" color="teal">
           <Header.Content>Your Decision</Header.Content>
         </Header>
-        {(roundInfo && roundInfo.submit === false) || !roundInfo ? (
+        {(companyRoundInfo && companyRoundInfo.submit === false) || !companyRoundInfo ? (
           <Form>
             <Form.Field>
               <label>Quantity of Your Production</label>
               <input
                 placeholder="Quantity"
+                name="decision"
                 value={this.state.decision}
-                onChange={this.handleDecision}
+                onChange={this.handleInputFields}
               />
             </Form.Field>
             <Button
