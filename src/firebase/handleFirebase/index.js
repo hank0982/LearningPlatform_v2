@@ -152,13 +152,21 @@ class FirebaseHandler {
       });
     }
     else {
-      price: constant - slope * this.database
+      this.database
       .ref(roomNum)
       .child("on")
       .child("round")
       .child(`round${roundNum}`)
       .child(groupNum)
-      .child("quantityProduction");
+      .update({
+        price: constant - slope * this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(groupNum)
+        .child("quantityProduction")
+      });  
     }
   }
 
