@@ -148,7 +148,7 @@ class FirebaseHandler {
       .child(`round${roundNum}`)
       .child(groupNum)
       .update({
-        price: price // unit price value;
+        price: unitPrice
       });
     }
     else {
