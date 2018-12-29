@@ -20,11 +20,11 @@ class GameForm extends Component {
     this.submitDecision = this.submitDecision.bind(this);
   }
   componentWillMount() {
-    const { firebase, roomNum, groupNum, roomInfo} = this.props;
+    const { firebase, roomNum, groupNum, roomInfo } = this.props;
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
-        companyInfo
+        companyInfo  // companyInfo: companyInfo
       });
     });
     firebase.getCompanyRoundStatusListener(roomNum, groupNum, data => {
@@ -32,7 +32,6 @@ class GameForm extends Component {
         companyRoundInfo: data
       });
     });
-
   }
 
   // Production Cost formula
@@ -82,17 +81,17 @@ class GameForm extends Component {
 
   // When player inputs "Borrow",
   // set `this.state.borrowing` to what s/he types
-  handleInputFields(e){
+  handleInputFields(e) {
     this.setState({
       [e.target.name]: e.target.value
-    })
-    console.log(e.target.name + " change to " +　e.target.value)
+    });
+    console.log(e.target.name + " changed to " + e.target.value);
   }
-  
+
   submitDecision(e) {
     e.preventDefault();
-    const {borrowing, returning, decision} = this.state;
-    const { firebase, roomNum, groupNum, roomInfo, currentRound} = this.props;
+    const { borrowing, returning, decision } = this.state;
+    const { firebase, roomNum, groupNum, roomInfo, currentRound } = this.props;
     firebase.pushCompanyDecision(
       roomNum,
       groupNum,
@@ -100,7 +99,7 @@ class GameForm extends Component {
       returning,
       borrowing,
       decision
-    )
+    );
 
     // Set all input boxes back to empty strings
     this.setState({
@@ -154,7 +153,8 @@ class GameForm extends Component {
         <Header as="h2" color="teal">
           <Header.Content>Your Decision</Header.Content>
         </Header>
-        {(companyRoundInfo && companyRoundInfo.submit === false) || !companyRoundInfo ? (
+        {(companyRoundInfo && companyRoundInfo.submit === false) ||
+        !companyRoundInfo ? (
           <Form>
             <Form.Field>
               <label>Quantity of Your Production</label>

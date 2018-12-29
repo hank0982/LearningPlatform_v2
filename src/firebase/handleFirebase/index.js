@@ -9,6 +9,7 @@ class FirebaseHandler {
   constructor() {
     this.database = firebase.initializeApp(config, "database").database();
     this.getFirmNames = this.getFirmNames.bind(this);
+    const that = this;
   }
 
   isRoomExist(roomNum, groupNum) {
@@ -55,8 +56,6 @@ class FirebaseHandler {
   //     });
   // }
 
-  // cb = callback
-  // getRoomInfo ('1234', val => {console.log(val)})
   getRoomInfo(roomNum, cb) {
     return this.database
       .ref(roomNum)
@@ -96,14 +95,123 @@ class FirebaseHandler {
       });
   }
 
-  pushCompanyDecision(roomNum, groupNum, roundNum, returning, borrowing, quantity) {
-    this.database.ref(roomNum).child('on').child('round').child(`round${roundNum}`).child(`${groupNum}`).set({
-      isBorrowing: borrowing>0,
-      numBorrowing: borrowing,
-      quantityProduction: quantity,
-      returning,
-      submit: true
-    },console.log('test'))
+  pushCompanyDecision(
+    roomNum,
+    groupNum,
+    roundNum,
+    returning,
+    borrowing,
+    quantity
+  ) {
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(`${groupNum}`)
+      .set(
+        {
+          isBorrowing: borrowing > 0,
+          numBorrowing: borrowing,
+          quantityProduction: quantity,
+          returning,
+          submit: true
+        },
+        console.log("test")
+      );
+  }
+
+  calculateUnitPrice(roomNum, groupNum) {
+    var roomInfo = this.database.ref(roomNum).child("on").child("roomInfo");
+    var totalQuantityInThisRound = 0;
+    var currentRound = getCurrentRound(roomNum);
+    var constant = roomInfo.child("constant");
+    var slope = roomInfo.child("slope");
+    var unitPrice = 0;
+    for (var i = 0; i < parseInt(roomInfo.child("firmNum")); i++) {
+      var companyQuantity =
+      this.database
+       .ref(roomNum)
+       .child("on")
+       .child("round")
+       .child(`round${roundNum}`)
+       .child(i)
+       .child("quantityProduction");
+      totalQuantityInThisRound += companyQuantity;
+    }
+    unitPrice = constant - slope * totalQuantityInThisRound;
+    if (roomInfo.child("marketType") != "monoply") {
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(groupNum)
+      .update({
+        price: price // unit price value;
+      });
+    }
+    else {
+      price: constant - slope * this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(groupNum)
+      .child("quantityProduction");
+    }
+  }
+
+  calculateUnitCost(roomNum, groupNum) {
+      var c1 = this.database.ref(roomNum).child("on").child(`company_${groupNum}`).child("coefficientOne");
+      var c2 = this.database.ref(roomNum).child("on").child(`company_${groupNum}`).child("coefficientTwo");
+      var c3 = this.database.ref(roomNum).child("on").child(`company_${groupNum}`).child("coefficientThree");
+      var constant = this.database.ref(roomNum).child("on").child("roomInfo").child("constant");
+      var companyQuantity =
+      this.database
+       .ref(roomNum)
+       .child("on")
+       .child("round")
+       .child(`round${roundNum}`)
+       .child(groupNum)
+       .child("quantityProduction");
+      var totalCost =
+      c1 * companyQuantity +
+      c2 * companyQuantity * companyQuantity +
+      c3 * companyQuantity * companyQuantity * companyQuantity + constant;
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(groupNum)
+      .update({
+        cost: totalCost / companyQuantity  // unit cost value;
+      });
+  }
+
+  calculateProfit(roomNum, groupNum) {
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(groupNum)
+      .update({
+        profit: // profit value;
+      });
+  }
+
+  calculateRevenue(roomNum, groupNum) {
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(groupNum)
+      .update({
+        revenue: // revenue value;
+      });
   }
 
   getCompanyName(roomNum, groupNum) {
@@ -163,9 +271,7 @@ class FirebaseHandler {
   }
 
   // DOING
-  getRoundListener() {
-
-  }
+  getRoundListener() {}
 
   getCompetitorOutputData(roomNum, totalFirmNumber, currentRound) {
     return this.getFirmNames(roomNum, totalFirmNumber).then(nameList => {
