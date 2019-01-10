@@ -141,7 +141,7 @@ class FirebaseHandler {
       totalQuantityInThisRound += companyQuantity;
     }
     unitPrice = constant - slope * totalQuantityInThisRound;
-    if (roomInfo.child("marketType") != "monoply") {
+    if (roomInfo.child("marketType") !== "monoply") {
       this.database
         .ref(roomNum)
         .child("on")
