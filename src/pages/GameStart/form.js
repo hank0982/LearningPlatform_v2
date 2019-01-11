@@ -24,7 +24,7 @@ class GameForm extends Component {
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
-        companyInfo  // companyInfo: companyInfo
+        companyInfo // companyInfo: companyInfo
       });
     });
     firebase.getCompanyRoundStatusListener(roomNum, groupNum, data => {
@@ -91,7 +91,7 @@ class GameForm extends Component {
   submitDecision(e) {
     e.preventDefault();
     const { borrowing, returning, decision } = this.state;
-    const { firebase, roomNum, groupNum, roomInfo, currentRound } = this.props;
+    const { firebase, roomNum, groupNum, roundNum, currentRound } = this.props;
     firebase.pushCompanyDecision(
       roomNum,
       groupNum,
@@ -107,6 +107,13 @@ class GameForm extends Component {
       returning: "",
       decision: ""
     });
+
+    if (firebase.compareFirmNum(roomNum, groupNum, roundNum) === true) {
+      firebase.calculateUnitPrice(roomNum, groupNum, roundNum);
+      firebase.calculateUnitCost(roomNum, groupNum, roundNum);
+      firebase.calculateProfit(roomNum, groupNum, roundNum);
+      firebase.calculateRevenue(roomNum, groupNum, roundNum);
+    }
   }
 
   render() {

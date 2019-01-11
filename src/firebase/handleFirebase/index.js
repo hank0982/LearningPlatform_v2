@@ -121,6 +121,27 @@ class FirebaseHandler {
       );
   }
 
+  compareFirmNum(roomNum, groupNum, roundNum) {
+    var firmNum = this.database
+      .ref(roomNum)
+      .child("on")
+      .child("roomInfo")
+      .child("firmNum");
+    var currentRound = this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child("currentRound");
+    this.database  // initialize the firmNumCount to 'zero'
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .update({
+        firmNumCount: 0
+      });
+    // DOING
+  }
   calculateUnitPrice(roomNum, groupNum, roundNum) {
     var roomInfo = this.database
       .ref(roomNum)
