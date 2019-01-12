@@ -92,28 +92,30 @@ class GameForm extends Component {
     e.preventDefault();
     const { borrowing, returning, decision } = this.state;
     const { firebase, roomNum, groupNum, roundNum, currentRound } = this.props;
-    firebase.pushCompanyDecision(
-      roomNum,
-      groupNum,
-      currentRound,
-      returning,
-      borrowing,
-      decision
-    );
-
-    // Set all input boxes back to empty strings
-    this.setState({
-      borrowing: "",
-      returning: "",
-      decision: ""
-    });
-
-    if (firebase.compareFirmNum(roomNum, groupNum, roundNum) === true) {
-      firebase.calculateUnitPrice(roomNum, groupNum, roundNum);
-      firebase.calculateUnitCost(roomNum, groupNum, roundNum);
-      firebase.calculateProfit(roomNum, groupNum, roundNum);
-      firebase.calculateRevenue(roomNum, groupNum, roundNum);
-    }
+    firebase
+      .pushCompanyDecision(
+        roomNum,
+        groupNum,
+        currentRound,
+        returning,
+        borrowing,
+        decision
+      )
+      .then(() => {
+        this.setState({
+          borrowing: "",
+          returning: "",
+          decision: ""
+        });
+        firebase.compareFirmNum(roomNum, currentRound).then(bool => {
+          if (bool) {
+            firebase.calculateUnitPrice(roomNum, groupNum, roundNum);
+            firebase.calculateUnitCost(roomNum, groupNum, roundNum);
+            firebase.calculateProfit(roomNum, groupNum, roundNum);
+            firebase.calculateRevenue(roomNum, groupNum, roundNum);
+          }
+        });
+      });
   }
 
   render() {
