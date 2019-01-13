@@ -138,11 +138,10 @@ class FirebaseHandler {
       .ref(roomNum)
       .child("on")
       .child("roomInfo");
-
     var totalQuantityInThisRound = 0;
-    var constant_v = await this.getData(roomInfo.child("constant"));
-    var slope_v = await this.getData(roomInfo.child("slope"));
-    var firmNum_v = await this.getData(roomInfo.child("firmNum"));
+    var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
+    var slope_v = parseFloat(await this.getData(roomInfo.child("slope")));
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
     var unitPrice = 0;
     for (var i = 0; i < firmNum_v; i++) {
       var companyQuantity_v = parseInt(
@@ -156,11 +155,10 @@ class FirebaseHandler {
             .child("quantityProduction")
         )
       );
-      totalQuantityInThisRound += parseInt(companyQuantity_v);
+      totalQuantityInThisRound += companyQuantity_v;
     }
     unitPrice =
-      parseFloat(constant_v) +
-      parseFloat(slope_v) * parseInt(totalQuantityInThisRound);
+      constant_v + slope_v * totalQuantityInThisRound;
     if (unitPrice < 0) {
       unitPrice = 0;
     }
@@ -177,7 +175,14 @@ class FirebaseHandler {
         });
     } else {
       for (i = 1; i <= firmNum_v; i++) {
-        this.database
+        var quantity = parseInt(await this.getData(this.database
+          .ref(roomNum)
+          .child("on")
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i)
+          .child("quantityProduction")));
+        await this.database
           .ref(roomNum)
           .child("on")
           .child("round")
@@ -186,14 +191,7 @@ class FirebaseHandler {
           .update({
             price:
               constant_v +
-              slope_v *
-                this.database
-                  .ref(roomNum)
-                  .child("on")
-                  .child("round")
-                  .child(`round${roundNum}`)
-                  .child(i)
-                  .child("quantityProduction")
+              slope_v * quantity
           });
       }
     }
