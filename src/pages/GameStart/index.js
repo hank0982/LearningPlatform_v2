@@ -167,7 +167,7 @@ class GameStart extends Component {
             </a>
             <a className="ui blue tag label">
               Round
-              <Label.Detail>{roomInfo && roomInfo.roundNum}</Label.Detail>
+              <Label.Detail>{currentRound}</Label.Detail>
             </a>
           </Grid.Row>
         </Grid>

@@ -119,10 +119,9 @@ class GameForm extends Component {
                     firebase
                       .calculateProfit(roomNum, currentRound)
                       .then(() =>
-                        firebase.calculateRevenue(
-                          roomNum,
-                          currentRound
-                        )
+                        firebase
+                          .calculateRevenue(roomNum, currentRound)
+                          .then(() => firebase.falsifyEndroundbutton(roomNum))
                       )
                   )
               );

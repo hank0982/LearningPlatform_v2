@@ -34,28 +34,6 @@ class FirebaseHandler {
       });
   }
 
-  // getRoomInfo(roomNum) {
-  //   return this.database
-  //     .ref(roomNum)
-  //     .child("on")
-  //     .child("roomInfo")
-  //     .once("value")
-  //     .then(data => {
-  //       if (isNull(data.val())) {
-  //         return Promise.reject(
-  //           new Error(
-  //             "Sorry, the room number you provide is not valid. Please try again",
-  //           ),
-  //         );
-  //       } else {
-  //         return Promise.resolve(data.val());
-  //       }
-  //     })
-  //     .catch(e => {
-  //       return Promise.reject(e);
-  //     });
-  // }
-
   getRoomInfo(roomNum, cb) {
     return this.database
       .ref(roomNum)
@@ -338,6 +316,16 @@ class FirebaseHandler {
     }
   }
 
+  falsifyEndroundbutton(roomNum) {
+    this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .update({
+        endroundbutton: false
+      });
+  }
+
   getCompanyName(roomNum, groupNum) {
     return this.database
       .ref(roomNum)
@@ -393,9 +381,6 @@ class FirebaseHandler {
         };
       });
   }
-
-  // DOING
-  getRoundListener() {}
 
   getCompetitorOutputData(roomNum, totalFirmNumber, currentRound) {
     return this.getFirmNames(roomNum, totalFirmNumber).then(nameList => {
