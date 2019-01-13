@@ -155,7 +155,7 @@ class FirebaseHandler {
     });
   }
 
-  async calculateUnitPrice(roomNum, groupNum, roundNum) {
+  async calculateUnitPrice(roomNum, roundNum) {
     var roomInfo = this.database // Simplifying a path for future use
       .ref(roomNum)
       .child("on")
@@ -167,135 +167,167 @@ class FirebaseHandler {
     var firmNum_v = await this.getData(roomInfo.child("firmNum"));
     var unitPrice = 0;
     for (var i = 0; i < firmNum_v; i++) {
-      var companyQuantity_v = await this.getData(
-        this.database
-          .ref(roomNum)
-          .child("on")
-          .child("round")
-          .child(`round${roundNum}`)
-          .child(i + 1)
-          .child("quantityProduction")
+      var companyQuantity_v = parseInt(
+        await this.getData(
+          this.database
+            .ref(roomNum)
+            .child("on")
+            .child("round")
+            .child(`round${roundNum}`)
+            .child(i + 1)
+            .child("quantityProduction")
+        )
       );
-      totalQuantityInThisRound += companyQuantity_v;
+      totalQuantityInThisRound += parseInt(companyQuantity_v);
     }
-    unitPrice = constant_v - slope_v * totalQuantityInThisRound;
+    unitPrice =
+      parseFloat(constant_v) +
+      parseFloat(slope_v) * parseInt(totalQuantityInThisRound);
+    if (unitPrice < 0) {
+      unitPrice = 0;
+    }
+    console.log(`Constant ${constant_v}`);
+    console.log(`Slope ${slope_v}`);
     if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
       this.database
         .ref(roomNum)
         .child("on")
         .child("round")
         .child(`round${roundNum}`)
-        .child(groupNum)
         .update({
           price: unitPrice
         });
-      console.log("Not Monopoly!\n" + unitPrice);
     } else {
+      for (i = 1; i <= firmNum_v; i++) {
+        this.database
+          .ref(roomNum)
+          .child("on")
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i)
+          .update({
+            price:
+              constant_v +
+              slope_v *
+                this.database
+                  .ref(roomNum)
+                  .child("on")
+                  .child("round")
+                  .child(`round${roundNum}`)
+                  .child(i)
+                  .child("quantityProduction")
+          });
+      }
+    }
+  }
+
+  async calculateUnitCost(roomNum, roundNum) {
+    var roomInfo = this.database // Simplifying a path for future use
+      .ref(roomNum)
+      .child("on")
+      .child("roomInfo");
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    for (var i = 1; i <= firmNum_v; i++) {
+      var c1 = this.database
+        .ref(roomNum)
+        .child("on")
+        .child(`company_${i}`)
+        .child("coefficientOne");
+      var c2 = this.database
+        .ref(roomNum)
+        .child("on")
+        .child(`company_${i}`)
+        .child("coefficientTwo");
+      var c3 = this.database
+        .ref(roomNum)
+        .child("on")
+        .child(`company_${i}`)
+        .child("coefficientThree");
+      var constant = this.database // This constant is not the other constant!
+        .ref(roomNum)
+        .child("on")
+        .child(`company_${i}`)
+        .child("constant");
+      var companyQuantity = this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .child("quantityProduction");
+      var c1_v = parseFloat(await this.getData(c1));
+      var c2_v = parseFloat(await this.getData(c2));
+      var c3_v = parseFloat(await this.getData(c3));
+      var constant_v = parseFloat(await this.getData(constant));
+      var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+      var totalCost =
+        c1_v * companyQuantity_v +
+        c2_v * companyQuantity_v * companyQuantity_v +
+        c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
+        constant_v;
       this.database
         .ref(roomNum)
         .child("on")
         .child("round")
         .child(`round${roundNum}`)
-        .child(groupNum)
+        .child(i)
         .update({
-          price:
-            constant_v -
-            slope_v *
-              this.database
-                .ref(roomNum)
-                .child("on")
-                .child("round")
-                .child(`round${roundNum}`)
-                .child(groupNum)
-                .child("quantityProduction")
+          unitCost: totalCost / companyQuantity_v
         });
-      console.log("Monopoly!");
     }
   }
 
-  async calculateUnitCost(roomNum, groupNum, roundNum) {
-    var c1 = this.database
+  async calculateProfit(roomNum, roundNum) {
+    var roomInfo = this.database // Simplifying a path for future use
       .ref(roomNum)
       .child("on")
-      .child(`company_${groupNum}`)
-      .child("coefficientOne");
-    var c2 = this.database
-      .ref(roomNum)
-      .child("on")
-      .child(`company_${groupNum}`)
-      .child("coefficientTwo");
-    var c3 = this.database
-      .ref(roomNum)
-      .child("on")
-      .child(`company_${groupNum}`)
-      .child("coefficientThree");
-    var constant = this.database
-      .ref(roomNum)
-      .child("on")
-      .child("roomInfo")
-      .child("constant");
-    var companyQuantity = this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .child("quantityProduction");
-    var c1_v = await this.getData(c1);
-    var c2_v = await this.getData(c2);
-    var c3_v = await this.getData(c3);
-    var constant_v = await this.getData(constant);
-    var companyQuantity_v = await this.getData(companyQuantity);
-    var totalCost =
-      c1_v * companyQuantity_v +
-      c2_v * companyQuantity_v * companyQuantity_v +
-      c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
-      constant_v;
-    this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .update({
-        unitCost: totalCost / companyQuantity_v
-      });
-  }
-
-  async calculateProfit(roomNum, groupNum, roundNum) {
-    var unitPrice = this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .child("price");
-    var unitCost = this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .child("unitCost");
-    var companyQuantity = this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .child("quantityProduction");
-    var unitPrice_v = await this.getData(unitPrice);
-    var unitCost_v = await this.getData(unitCost);
-    var companyQuantity_v = await this.getData(companyQuantity);
-    this.database
-      .ref(roomNum)
-      .child("on")
-      .child("round")
-      .child(`round${roundNum}`)
-      .child(groupNum)
-      .update({
-        profit: (unitPrice_v - unitCost_v) / companyQuantity_v
-      });
+      .child("roomInfo");
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    var unitPrice;
+    for (var i = 1; i <= firmNum_v; i++) {
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+        unitPrice = this.database
+          .ref(roomNum)
+          .child("on")
+          .child("round")
+          .child(`round${roundNum}`)
+          .child("price");
+      } else {
+        unitPrice = this.database
+          .ref(roomNum)
+          .child("on")
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i)
+          .child("price");
+      }
+      var unitCost = this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .child("unitCost");
+      var companyQuantity = this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .child("quantityProduction");
+      var unitPrice_v = parseFloat(await this.getData(unitPrice));
+      var unitCost_v = parseFloat(await this.getData(unitCost));
+      var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+      this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .update({
+          profit: (unitPrice_v - unitCost_v) / companyQuantity_v
+        });
+    }
   }
 
   async calculateRevenue(roomNum, groupNum, roundNum) {
