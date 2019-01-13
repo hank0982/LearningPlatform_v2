@@ -139,7 +139,7 @@ class FirebaseHandler {
           .then(snap => {
             console.log(snap.val());
             console.log(Object.keys(snap.val()).length);
-            return Object.keys(snap.val()).length === firmNum.val();
+            return Object.keys(snap.val()).length == firmNum.val();
           });
       });
   }
@@ -150,13 +150,13 @@ class FirebaseHandler {
       if (!isNull(snap.val())) {
         return Promise.resolve(snap.val());
       } else {
-        return Promise.reject(new Error("Round number is empty"));
+        return Promise.reject(new Error(ref + " is empty"));
       }
     });
   }
 
   async calculateUnitPrice(roomNum, groupNum, roundNum) {
-    var roomInfo = this.database   // Simplifying a path for future use
+    var roomInfo = this.database // Simplifying a path for future use
       .ref(roomNum)
       .child("on")
       .child("roomInfo");
@@ -166,22 +166,20 @@ class FirebaseHandler {
     var slope_v = await this.getData(roomInfo.child("slope"));
     var firmNum_v = await this.getData(roomInfo.child("firmNum"));
     var unitPrice = 0;
-    for (
-      var i = 0;
-      i < firmNum_v;
-      i++
-    ) {
-      var companyQuantity_v = await this.getData(this.database
-        .ref(roomNum)
-        .child("on")
-        .child("round")
-        .child(`round${roundNum}`)
-        .child(i)
-        .child("quantityProduction"));
+    for (var i = 0; i < firmNum_v; i++) {
+      var companyQuantity_v = await this.getData(
+        this.database
+          .ref(roomNum)
+          .child("on")
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i + 1)
+          .child("quantityProduction")
+      );
       totalQuantityInThisRound += companyQuantity_v;
     }
     unitPrice = constant_v - slope_v * totalQuantityInThisRound;
-    if (await this.getData(roomInfo.child("marketType")) !== "monoply") {
+    if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
       this.database
         .ref(roomNum)
         .child("on")
@@ -191,7 +189,7 @@ class FirebaseHandler {
         .update({
           price: unitPrice
         });
-        console.log("Not Monopoly!\n" + unitPrice);
+      console.log("Not Monopoly!\n" + unitPrice);
     } else {
       this.database
         .ref(roomNum)
@@ -211,7 +209,7 @@ class FirebaseHandler {
                 .child(groupNum)
                 .child("quantityProduction")
         });
-        console.log("Monopoly!")
+      console.log("Monopoly!");
     }
   }
 
@@ -339,7 +337,7 @@ class FirebaseHandler {
         if (!isNull(snap.val())) {
           return Promise.resolve(snap.val());
         } else {
-          return Promise.reject(new Error("Round number is empty"));
+          return Promise.reject(new Error("Round Number is empty"));
         }
       })
       .catch(err => {

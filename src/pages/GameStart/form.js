@@ -109,10 +109,10 @@ class GameForm extends Component {
         });
         firebase.compareFirmNum(roomNum, currentRound).then(bool => {
           if (bool) {
-            firebase.calculateUnitPrice(roomNum, groupNum, roundNum);
-            firebase.calculateUnitCost(roomNum, groupNum, roundNum);
-            firebase.calculateProfit(roomNum, groupNum, roundNum);
-            firebase.calculateRevenue(roomNum, groupNum, roundNum);
+            firebase.calculateUnitPrice(roomNum, groupNum, currentRound);
+            // firebase.calculateUnitCost(roomNum, groupNum, currentRound);
+            // firebase.calculateProfit(roomNum, groupNum, currentRound);
+            // firebase.calculateRevenue(roomNum, groupNum, currentRound);
           }
         });
       });
