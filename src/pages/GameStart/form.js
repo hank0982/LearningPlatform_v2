@@ -14,13 +14,16 @@ class GameForm extends Component {
       companyRoundInfo: null,
       borrowing: "",
       returning: "",
-      decision: ""
+      decision: "",
+      isLeaderSubmitted: "undefined",
+      isLeader: "undefined",
+      phQuantity: "Quantity"
     };
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
   }
   componentWillMount() {
-    const { firebase, roomNum, groupNum, roomInfo } = this.props;
+    const { firebase, roomNum, groupNum, currentRound } = this.props;
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
@@ -32,6 +35,30 @@ class GameForm extends Component {
         companyRoundInfo: data
       });
     });
+    firebase.leaderSubmitted(roomNum, currentRound, data => {
+      console.log("Data is: " + data);
+      if (data === null) {
+        that.setState({
+          isLeaderSubmitted: false
+        });
+      } else {
+        that.setState({
+          isLeaderSubmitted: true
+        });
+      }
+    });
+    firebase.isLeader(roomNum, groupNum).then(bool => {
+      that.setState({
+        isLeader: bool
+      });
+    });
+    firebase.displayLeaderQ(roomNum, currentRound, q => {
+      if (q !== null) {
+        that.setState({
+          phQuantity: `The leader company submitted: ${q}`
+        })
+      }
+    })
   }
 
   // Production Cost formula
@@ -91,7 +118,7 @@ class GameForm extends Component {
   submitDecision(e) {
     e.preventDefault();
     const { borrowing, returning, decision } = this.state;
-    const { firebase, roomNum, groupNum, roundNum, currentRound } = this.props;
+    const { firebase, roomNum, groupNum, currentRound } = this.props;
     firebase
       .pushCompanyDecision(
         roomNum,
@@ -131,7 +158,13 @@ class GameForm extends Component {
   }
 
   render() {
-    const { companyInfo, companyRoundInfo } = this.state;
+    const {
+      companyInfo,
+      companyRoundInfo,
+      isLeaderSubmitted,
+      isLeader
+    } = this.state;
+    const { firebase, roomNum, groupNum, currentRound } = this.props;
     console.log(companyRoundInfo);
     return (
       <div>
@@ -176,27 +209,31 @@ class GameForm extends Component {
         </Header>
         {(companyRoundInfo && companyRoundInfo.submit === false) ||
         !companyRoundInfo ? (
-          <Form>
-            <Form.Field>
-              <label>Quantity of Your Production</label>
-              <input
-                placeholder="Quantity"
-                name="decision"
-                value={this.state.decision}
-                onChange={this.handleInputFields}
-              />
-            </Form.Field>
-            <Button
-              size="tiny"
-              type="submit"
-              color="teal"
-              onClick={this.submitDecision}>
-              <i class="sign in icon" />
-              Submit!
-            </Button>
-          </Form>
+          isLeaderSubmitted === false && isLeader === false ? (
+            <Segment>Please wait for the leader company</Segment>
+          ) : (
+            <Form>
+              <Form.Field>
+                <label>Quantity of Your Production</label>
+                <input
+                  placeholder={this.state.phQuantity}
+                  name="decision"
+                  value={this.state.decision}
+                  onChange={this.handleInputFields}
+                />
+              </Form.Field>
+              <Button
+                size="tiny"
+                type="submit"
+                color="teal"
+                onClick={this.submitDecision}>
+                <i class="sign in icon" />
+                Submit!
+              </Button>
+            </Form>
+          )
         ) : (
-          <Segment>Please Wait for other groups</Segment>
+          <Segment>Please wait for other groups to submit</Segment>
         )}
       </div>
     );

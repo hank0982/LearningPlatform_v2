@@ -87,16 +87,85 @@ class FirebaseHandler {
       .child("round")
       .child(`round${roundNum}`)
       .child(`${groupNum}`)
-      .set(
-        {
-          isBorrowing: borrowing > 0,
-          numBorrowing: borrowing,
-          quantityProduction: quantity,
-          returning,
-          submit: true
-        },
-        console.log("test")
-      );
+      .set({
+        isBorrowing: borrowing > 0,
+        numBorrowing: borrowing,
+        quantityProduction: quantity,
+        returning,
+        submit: true
+      });
+  }
+
+  async leaderSubmitted(roomNum, roundNum, cb) {
+    if (
+      (await this.getData(
+        this.database
+          .ref(roomNum)
+          .child("on")
+          .child("roomInfo")
+          .child("marketType")
+      )) === "stackelberg"
+    ) {
+      var leaderNum = this.database
+        .ref(roomNum)
+        .child("on")
+        .child("roomInfo")
+        .child("leader");
+      var leaderNum_v = parseInt(await this.getData(leaderNum));
+      var leaderQ = this.database
+        .ref(roomNum)
+        .child("on")
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(leaderNum_v)
+        .child("quantityProduction");
+
+      leaderQ.on("value", snap => {
+        cb(snap.val());
+      });
+    } else {
+      return true;
+    }
+  }
+
+  async isLeader(roomNum, groupNum) {
+    if (
+      (await this.getData(
+        this.database
+          .ref(roomNum)
+          .child("on")
+          .child("roomInfo")
+          .child("marketType")
+      )) !== "stackelberg"
+    ) {
+      return true;
+    }
+    var leaderNum = this.database
+      .ref(roomNum)
+      .child("on")
+      .child("roomInfo")
+      .child("leader");
+    var leaderNum_v = parseInt(await this.getData(leaderNum));
+    return leaderNum_v == groupNum;
+  }
+
+  async displayLeaderQ(roomNum, roundNum, cb) {
+    var leaderNum = this.database
+      .ref(roomNum)
+      .child("on")
+      .child("roomInfo")
+      .child("leader");
+    var leaderNum_v = parseInt(await this.getData(leaderNum));
+    var leaderQ = this.database
+      .ref(roomNum)
+      .child("on")
+      .child("round")
+      .child(`round${roundNum}`)
+      .child(leaderNum_v)
+      .child("quantityProduction");
+    return leaderQ.on("value", snap => {
+      cb(snap.val());
+    });
   }
 
   compareFirmNum(roomNum, roundNum) {
@@ -107,7 +176,6 @@ class FirebaseHandler {
       .child("firmNum")
       .once("value")
       .then(firmNum => {
-        console.log(firmNum.val());
         return this.database
           .ref(roomNum)
           .child("on")
@@ -115,9 +183,7 @@ class FirebaseHandler {
           .child(`round${roundNum}`)
           .once("value")
           .then(snap => {
-            console.log(snap.val());
-            console.log(Object.keys(snap.val()).length);
-            return Object.keys(snap.val()).length == firmNum.val();
+            return Object.keys(snap.val()).length === firmNum.val();
           });
       });
   }
@@ -157,8 +223,7 @@ class FirebaseHandler {
       );
       totalQuantityInThisRound += companyQuantity_v;
     }
-    unitPrice =
-      constant_v + slope_v * totalQuantityInThisRound;
+    unitPrice = constant_v + slope_v * totalQuantityInThisRound;
     if (unitPrice < 0) {
       unitPrice = 0;
     }
@@ -175,13 +240,17 @@ class FirebaseHandler {
         });
     } else {
       for (i = 1; i <= firmNum_v; i++) {
-        var quantity = parseInt(await this.getData(this.database
-          .ref(roomNum)
-          .child("on")
-          .child("round")
-          .child(`round${roundNum}`)
-          .child(i)
-          .child("quantityProduction")));
+        var quantity = parseInt(
+          await this.getData(
+            this.database
+              .ref(roomNum)
+              .child("on")
+              .child("round")
+              .child(`round${roundNum}`)
+              .child(i)
+              .child("quantityProduction")
+          )
+        );
         await this.database
           .ref(roomNum)
           .child("on")
@@ -189,9 +258,7 @@ class FirebaseHandler {
           .child(`round${roundNum}`)
           .child(i)
           .update({
-            price:
-              constant_v +
-              slope_v * quantity
+            price: constant_v + slope_v * quantity
           });
       }
     }
@@ -466,8 +533,6 @@ class FirebaseHandler {
   }
 
   getCompanyRoundStatusListener(roomNum, groupNum, cb) {
-    console.log(roomNum);
-    console.log(groupNum);
     this.database
       .ref(roomNum)
       .child("on")
