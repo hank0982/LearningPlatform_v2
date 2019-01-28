@@ -123,17 +123,21 @@ class GameForm extends Component {
     const { firebase, roomNum, groupNum, currentRound } = this.props;
 
     // CHECK IF RETURN/BORROWING SATISFIES REQUIREMENTS
-    // RETURN > DEBT (ROUND N-3 BORROWING THAT HASN'T BEEN PAID)
     // RETURN < CASH (OR ELSE BANKRUPT)
+    const maximumReturn = companyInfo.assetCash;
     // BORROWING + CASH > 0
-    /* CODE HERE */
-    if (
-      returning > 0 &&
-      returning < companyInfo.assetCash &&
-      borrowing + companyInfo.assetCash > 0
+    const minimumBorrow = -companyInfo.assetCash;
+    // RETURN > DEBT (ROUND N-3 BORROWING THAT HASN'T BEEN PAID)
+    // need be calculated
+    const minimumReturn = 0;
+    // calculate minimum return (round n-3 borrowing that hasn't been paid)
+    if (minimumReturn > companyInfo.assetCash) {
+      alert("bankrupt!");
+      return 0;
+    } else if (
+      maximumReturn > returning /* > minimumReturn */ &&
+      borrowing > minimumBorrow
     )
-      /* CODE ENDS */
-
       firebase
         .pushCompanyDecision(
           roomNum,
@@ -170,6 +174,7 @@ class GameForm extends Component {
             }
           });
         });
+    else alert("borrow or return does not satisfy!");
   }
 
   render() {
