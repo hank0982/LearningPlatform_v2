@@ -11,10 +11,6 @@ class BalanceSheet extends Component {
     cookies: instanceOf(Cookies).isRequired
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   // Generate table for “.../game_start/Company Intro/Balance Sheet”
   // numeral(xyz).format("0,0") for thousand separators
   generateTable(title, contentArray) {

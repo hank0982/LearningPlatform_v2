@@ -9,7 +9,6 @@ class FirebaseHandler {
   constructor() {
     this.database = firebase.initializeApp(config, "database").database();
     this.getFirmNames = this.getFirmNames.bind(this);
-    const that = this;
   }
 
   isRoomExist(roomNum, groupNum) {
@@ -111,7 +110,7 @@ class FirebaseHandler {
         .child("on")
         .child("roomInfo")
         .child("leader");
-      var leaderNum_v = parseInt(await this.getData(leaderNum));
+      var leaderNum_v = parseInt(await this.getData(leaderNum), 10);
       var leaderQ = this.database
         .ref(roomNum)
         .child("on")
@@ -145,8 +144,8 @@ class FirebaseHandler {
       .child("on")
       .child("roomInfo")
       .child("leader");
-    var leaderNum_v = parseInt(await this.getData(leaderNum));
-    return leaderNum_v == groupNum;
+    var leaderNum_v = parseInt(await this.getData(leaderNum), 10);
+    return leaderNum_v === groupNum;
   }
 
   async displayLeaderQ(roomNum, roundNum, cb) {
@@ -155,7 +154,7 @@ class FirebaseHandler {
       .child("on")
       .child("roomInfo")
       .child("leader");
-    var leaderNum_v = parseInt(await this.getData(leaderNum));
+    var leaderNum_v = parseInt(await this.getData(leaderNum), 10);
     var leaderQ = this.database
       .ref(roomNum)
       .child("on")
@@ -207,7 +206,7 @@ class FirebaseHandler {
     var totalQuantityInThisRound = 0;
     var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
     var slope_v = parseFloat(await this.getData(roomInfo.child("slope")));
-    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
     for (var i = 0; i < firmNum_v; i++) {
       var companyQuantity_v = parseInt(
@@ -219,7 +218,8 @@ class FirebaseHandler {
             .child(`round${roundNum}`)
             .child(i + 1)
             .child("quantityProduction")
-        )
+        ),
+        10
       );
       totalQuantityInThisRound += companyQuantity_v;
     }
@@ -249,7 +249,8 @@ class FirebaseHandler {
               .child(`round${roundNum}`)
               .child(i)
               .child("quantityProduction")
-          )
+          ),
+          10
         );
         await this.database
           .ref(roomNum)
@@ -269,7 +270,7 @@ class FirebaseHandler {
       .ref(roomNum)
       .child("on")
       .child("roomInfo");
-    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var companyNum = this.database.ref(roomNum).child("on");
 
     for (var i = 1; i <= firmNum_v; i++) {
@@ -316,7 +317,7 @@ class FirebaseHandler {
       .child("on")
       .child("round")
       .child(`round${roundNum}`);
-    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice;
     for (var i = 1; i <= firmNum_v; i++) {
       if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
@@ -351,7 +352,7 @@ class FirebaseHandler {
       .child("on")
       .child("round")
       .child(`round${roundNum}`);
-    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
+    var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice;
     for (var i = 1; i <= firmNum_v; i++) {
       if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
@@ -451,14 +452,14 @@ class FirebaseHandler {
     return this.getFirmNames(roomNum, totalFirmNumber).then(nameList => {
       const initAccumProfitPerCompany = totalFirmNumber => {
         const accumprofitPerCompany = {};
-        for (var u = 1; u <= parseInt(totalFirmNumber); u++) {
+        for (var u = 1; u <= parseInt(totalFirmNumber, 10); u++) {
           accumprofitPerCompany[nameList[u]] = 0;
         }
         return accumprofitPerCompany;
       };
       const initRoundArray = totalFirmNumber => {
         const rounds = {};
-        for (var k = 1; k <= parseInt(totalFirmNumber); k++) {
+        for (var k = 1; k <= parseInt(totalFirmNumber, 10); k++) {
           rounds[nameList[k]] = {};
         }
         return rounds;
@@ -474,9 +475,10 @@ class FirebaseHandler {
         .then(function(data) {
           const informationOfEachRound = data.val();
           for (var i = 1; i <= currentRound; i++) {
-            for (var t = 1; t <= parseInt(totalFirmNumber); t++) {
+            for (var t = 1; t <= parseInt(totalFirmNumber, 10); t++) {
               roundArray[nameList[t]][i] = parseInt(
-                informationOfEachRound["round" + i][t].quantityProduction
+                informationOfEachRound["round" + i][t].quantityProduction,
+                10
               );
               if (i === currentRound) {
                 profitPerCompany[nameList[t]] = parseFloat(

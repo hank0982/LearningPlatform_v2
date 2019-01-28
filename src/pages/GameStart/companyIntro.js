@@ -9,10 +9,6 @@ class CompanyIntro extends Component {
     cookies: instanceOf(Cookies).isRequired
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     // Equivalent to: var companyInfo = this.props.companyInfo;
     const { companyInfo } = this.props;

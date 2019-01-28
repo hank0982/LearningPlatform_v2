@@ -7,6 +7,7 @@ class GameForm extends Component {
   static propTypes = {
     cookies: instanceOf(Cookies).isRequired
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -22,6 +23,7 @@ class GameForm extends Component {
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
   }
+
   componentWillMount() {
     const { firebase, roomNum, groupNum, currentRound } = this.props;
     const that = this;
@@ -177,7 +179,6 @@ class GameForm extends Component {
       isLeaderSubmitted,
       isLeader
     } = this.state;
-    const { firebase, roomNum, groupNum, currentRound } = this.props;
     console.log(companyRoundInfo);
     return (
       <div>

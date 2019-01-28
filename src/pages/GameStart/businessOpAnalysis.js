@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Header, Card, Tab } from "semantic-ui-react";
+import { Header, Tab } from "semantic-ui-react";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
 import ReactChartkick, { LineChart } from "react-chartkick";
