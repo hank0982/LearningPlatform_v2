@@ -56,9 +56,9 @@ class GameForm extends Component {
       if (q !== null) {
         that.setState({
           phQuantity: `The leader company submitted: ${q}`
-        })
+        });
       }
-    })
+    });
   }
 
   // Production Cost formula
@@ -117,44 +117,57 @@ class GameForm extends Component {
 
   submitDecision(e) {
     e.preventDefault();
-    const { borrowing, returning, decision } = this.state;
+    const { borrowing, returning, decision, companyInfo } = this.state;
     const { firebase, roomNum, groupNum, currentRound } = this.props;
-    firebase
-      .pushCompanyDecision(
-        roomNum,
-        groupNum,
-        currentRound,
-        returning,
-        borrowing,
-        decision
-      )
-      .then(() => {
-        this.setState({
-          borrowing: "",
-          returning: "",
-          decision: ""
+
+    // CHECK IF RETURN/BORROWING SATISFIES REQUIREMENTS
+    // RETURN > DEBT (ROUND N-3 BORROWING THAT HASN'T BEEN PAID)
+    // RETURN < CASH (OR ELSE BANKRUPT)
+    // BORROWING + CASH > 0
+    /* CODE HERE */
+    if (
+      returning > 0 &&
+      returning < companyInfo.assetCash &&
+      borrowing + companyInfo.assetCash > 0
+    )
+      /* CODE ENDS */
+
+      firebase
+        .pushCompanyDecision(
+          roomNum,
+          groupNum,
+          currentRound,
+          returning,
+          borrowing,
+          decision
+        )
+        .then(() => {
+          this.setState({
+            borrowing: "",
+            returning: "",
+            decision: ""
+          });
+          firebase.compareFirmNum(roomNum, currentRound).then(bool => {
+            console.log(bool);
+            if (bool) {
+              firebase
+                .calculateUnitPrice(roomNum, currentRound)
+                .then(() =>
+                  firebase
+                    .calculateUnitCost(roomNum, currentRound)
+                    .then(() =>
+                      firebase
+                        .calculateProfit(roomNum, currentRound)
+                        .then(() =>
+                          firebase
+                            .calculateRevenue(roomNum, currentRound)
+                            .then(() => firebase.falsifyEndroundbutton(roomNum))
+                        )
+                    )
+                );
+            }
+          });
         });
-        firebase.compareFirmNum(roomNum, currentRound).then(bool => {
-          console.log(bool);
-          if (bool) {
-            firebase
-              .calculateUnitPrice(roomNum, currentRound)
-              .then(() =>
-                firebase
-                  .calculateUnitCost(roomNum, currentRound)
-                  .then(() =>
-                    firebase
-                      .calculateProfit(roomNum, currentRound)
-                      .then(() =>
-                        firebase
-                          .calculateRevenue(roomNum, currentRound)
-                          .then(() => firebase.falsifyEndroundbutton(roomNum))
-                      )
-                  )
-              );
-          }
-        });
-      });
   }
 
   render() {
@@ -185,18 +198,18 @@ class GameForm extends Component {
           <Form>
             {/* Alter `companyInfo.liabilitiesBorrwoing` */}
             <Form.Field>
-              <label>Borrow</label>
+              <label>Issue Corporate Bond</label>
               <input
-                placeholder="Borrowing Amount (in USD)"
+                placeholder="Issuing Amount (in USD)"
                 name="borrowing"
                 value={this.state.borrowing}
                 onChange={this.handleInputFields}
               />
             </Form.Field>
             <Form.Field>
-              <label>Return</label>
+              <label>Bond Payment</label>
               <input
-                placeholder="Returning Amount (in USD)"
+                placeholder="Bound Amount (in USD)"
                 name="returning"
                 value={this.state.returning}
                 onChange={this.handleInputFields}
@@ -226,7 +239,8 @@ class GameForm extends Component {
                 size="tiny"
                 type="submit"
                 color="teal"
-                onClick={this.submitDecision}>
+                onClick={this.submitDecision}
+              >
                 <i class="sign in icon" />
                 Submit!
               </Button>

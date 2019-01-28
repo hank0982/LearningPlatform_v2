@@ -65,8 +65,8 @@ class BalanceSheet extends Component {
           ["Total Asset", totalAsset]
         ])}
         {this.generateTable("Liability", [
-          ["Note Payable", companyInfo.liabilitiesBorrwoing],
-          ["Interest Payable", companyInfo.liabilitiesBorrwoing],
+          ["Bond Payable", companyInfo.liabilitiesBorrwoing],
+          // ["Interest Payable", companyInfo.liabilitiesBorrwoing],
           ["Total Liabilities	", companyInfo.liabilitiesBorrwoing]
         ])}
         {this.generateTable("Equity", [
