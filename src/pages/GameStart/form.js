@@ -66,7 +66,7 @@ class GameForm extends Component {
   // Production Cost formula
   renderTotalCost() {
     let { companyInfo } = this.state;
-    console.log(companyInfo);
+    // console.log(companyInfo);
     if (companyInfo) {
       return (
         <Segment>
@@ -111,33 +111,32 @@ class GameForm extends Component {
   // When player inputs "Borrow",
   // set `this.state.borrowing` to what s/he types
   handleInputFields(e) {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
+    this.setState({ [e.target.name]: e.target.value });
     console.log(e.target.name + " changed to " + e.target.value);
   }
 
   submitDecision(e) {
     e.preventDefault();
-    const { borrowing, returning, decision, companyInfo } = this.state;
+    let {
+      borrowing,
+      returning,
+      decision,
+      companyInfo,
+      companyRoundInfo
+    } = this.state;
+    borrowing = parseInt(borrowing, 10);
+    returning = parseInt(returning, 10);
+    decision = parseInt(decision, 10);
     const { firebase, roomNum, groupNum, currentRound } = this.props;
 
     // CHECK IF RETURN/BORROWING SATISFIES REQUIREMENTS
-    // RETURN < CASH (OR ELSE BANKRUPT)
-    const maximumReturn = companyInfo.assetCash;
-    // BORROWING + CASH > 0
-    const minimumBorrow = -companyInfo.assetCash;
-    // RETURN > DEBT (ROUND N-3 BORROWING THAT HASN'T BEEN PAID)
-    // need be calculated
-    const minimumReturn = 0;
-    // calculate minimum return (round n-3 borrowing that hasn't been paid)
-    if (minimumReturn > companyInfo.assetCash) {
+    // RETURN = this round's returning value = set by previous rounds
+    const mustReturn = companyRoundInfo ? companyRoundInfo.returning : 0;
+    // RETURN < CASH or bankrupt
+    if (mustReturn > companyInfo.assetCash) {
       alert("bankrupt!");
       return 0;
-    } else if (
-      maximumReturn > returning /* > minimumReturn */ &&
-      borrowing > minimumBorrow
-    )
+    } else if (mustReturn === returning)
       firebase
         .pushCompanyDecision(
           roomNum,
@@ -167,7 +166,17 @@ class GameForm extends Component {
                         .then(() =>
                           firebase
                             .calculateRevenue(roomNum, currentRound)
-                            .then(() => firebase.falsifyEndroundbutton(roomNum))
+                            .then(() =>
+                              firebase
+                                .falsifyEndroundbutton(roomNum)
+                                .then(() =>
+                                  firebase.calculateFutureReturn(
+                                    roomNum,
+                                    groupNum,
+                                    currentRound
+                                  )
+                                )
+                            )
                         )
                     )
                 );
@@ -184,7 +193,7 @@ class GameForm extends Component {
       isLeaderSubmitted,
       isLeader
     } = this.state;
-    console.log(companyRoundInfo);
+    // console.log(companyRoundInfo);
     return (
       <div>
         <Header as="h2" color="teal">

@@ -382,6 +382,48 @@ class FirebaseHandler {
     }
   }
 
+  calculateFutureReturn(roomNum, groupNum, roundNum) {
+    const roundInfo = this.database // Simplifying a path for future use
+      .ref(roomNum)
+      .child("on")
+      .child("round");
+    let currentRoundData = this.getData(
+      roundInfo.child(`round${roundNum}`).child(groupNum)
+    );
+
+    if (!currentRoundData.isBorrowing) return 0;
+
+    let numBorrowing = currentRoundData.numBorrowing;
+    let marketInterestRate = parseInt(
+      this.getData(
+        this.database
+          .ref(roomNum)
+          .child("on")
+          .child(`company_${groupNum}`)
+          .child("marketInterestRate")
+      ),
+      10
+    );
+    for (let i = 1; i < 4; i++) {
+      // three rounds
+      let returning = parseInt(
+        this.getData(
+          roundInfo
+            .child(`round${roundNum + i}`)
+            .child(groupNum)
+            .child("returning")
+        ),
+        10
+      );
+      numBorrowing *= marketInterestRate;
+      returning += numBorrowing;
+      roundInfo
+        .child(`round${roundNum + i}`)
+        .child(groupNum)
+        .set({ returning });
+    }
+  }
+
   falsifyEndroundbutton(roomNum) {
     this.database
       .ref(roomNum)
