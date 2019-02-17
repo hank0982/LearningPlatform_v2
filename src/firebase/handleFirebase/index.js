@@ -11,11 +11,15 @@ class FirebaseHandler {
     this.getFirmNames = this.getFirmNames.bind(this);
     const that = this;
   }
+  
+  getRoomRootRef(roomNum){
+    return this.database
+    .ref(roomNum)
+    .child("on")
+  }
 
   isRoomExist(roomNum, groupNum) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("company_" + groupNum)
       .once("value")
       .then(data => {
@@ -35,9 +39,7 @@ class FirebaseHandler {
   }
 
   getRoomInfo(roomNum, cb) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("roomInfo")
       .on("value", snap => {
         if (!isNull(snap.val())) {
@@ -49,9 +51,7 @@ class FirebaseHandler {
   }
 
   getCurrentRound(roomNum, cb) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("round")
       .child("currentRound")
       .on("value", snap => {
@@ -64,9 +64,7 @@ class FirebaseHandler {
   }
 
   getCompanyListener(roomNum, groupNum, cb) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child(`company_${groupNum}`)
       .on("value", snap => {
         cb(snap.val());
@@ -81,9 +79,7 @@ class FirebaseHandler {
     borrowing,
     quantity
   ) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("round")
       .child(`round${roundNum}`)
       .child(`${groupNum}`)
@@ -100,17 +96,13 @@ class FirebaseHandler {
   }
 
   compareFirmNum(roomNum, roundNum) {
-    return this.database // 'return' because need of 'then chain'
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("roomInfo")
       .child("firmNum")
       .once("value")
       .then(firmNum => {
         console.log(firmNum.val());
-        return this.database
-          .ref(roomNum)
-          .child("on")
+        return getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .once("value")
@@ -134,9 +126,7 @@ class FirebaseHandler {
   }
 
   async calculateUnitPrice(roomNum, roundNum) {
-    var roomInfo = this.database // Simplifying a path for future use
-      .ref(roomNum)
-      .child("on")
+    var roomInfo = getRoomRootRef(roomNum)
       .child("roomInfo");
     var totalQuantityInThisRound = 0;
     var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
@@ -165,9 +155,7 @@ class FirebaseHandler {
     console.log(`Constant ${constant_v}`);
     console.log(`Slope ${slope_v}`);
     if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
-      this.database
-        .ref(roomNum)
-        .child("on")
+      getRoomRootRef(roomNum)
         .child("round")
         .child(`round${roundNum}`)
         .update({
@@ -175,16 +163,12 @@ class FirebaseHandler {
         });
     } else {
       for (i = 1; i <= firmNum_v; i++) {
-        var quantity = parseInt(await this.getData(this.database
-          .ref(roomNum)
-          .child("on")
+        var quantity = parseInt(await this.getData(getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .child(i)
           .child("quantityProduction")));
-        await this.database
-          .ref(roomNum)
-          .child("on")
+        await getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .child(i)
@@ -198,9 +182,7 @@ class FirebaseHandler {
   }
 
   async calculateUnitCost(roomNum, roundNum) {
-    var roomInfo = this.database // Simplifying a path for future use
-      .ref(roomNum)
-      .child("on")
+    var roomInfo = getRoomRootRef(roomNum)
       .child("roomInfo");
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")));
     var companyNum = this.database.ref(roomNum).child("on");
@@ -210,9 +192,7 @@ class FirebaseHandler {
       var c2 = companyNum.child(`company_${i}`).child("coefficientTwo");
       var c3 = companyNum.child(`company_${i}`).child("coefficientThree");
       var constant = companyNum.child(`company_${i}`).child("constant"); // not the previous constant!
-      var companyQuantity = this.database
-        .ref(roomNum)
-        .child("on")
+      var companyQuantity = getRoomRootRef(roomNum)
         .child("round")
         .child(`round${roundNum}`)
         .child(i)
@@ -227,9 +207,7 @@ class FirebaseHandler {
         c2_v * companyQuantity_v * companyQuantity_v +
         c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
         constant_v;
-      this.database
-        .ref(roomNum)
-        .child("on")
+        getRoomRootRef(roomNum)
         .child("round")
         .child(`round${roundNum}`)
         .child(i)
@@ -240,9 +218,7 @@ class FirebaseHandler {
   }
 
   async calculateProfit(roomNum, roundNum) {
-    var roomInfo = this.database // Simplifying a path for future use
-      .ref(roomNum)
-      .child("on")
+    var roomInfo = getRoomRootRef(roomNum)
       .child("roomInfo");
     var whichFirm = this.database
       .ref(roomNum)
@@ -315,9 +291,7 @@ class FirebaseHandler {
   }
 
   falsifyEndroundbutton(roomNum) {
-    this.database
-      .ref(roomNum)
-      .child("on")
+    getRoomRootRef(roomNum)
       .child("round")
       .update({
         endroundbutton: false
@@ -325,9 +299,7 @@ class FirebaseHandler {
   }
 
   getCompanyName(roomNum, groupNum) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("company_" + groupNum)
       .child("companyName")
       .once("value")
@@ -349,9 +321,7 @@ class FirebaseHandler {
     const revenuePerRounds = {};
     const profitPerRounds = {};
     const pricePerRounds = {};
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("round")
       .once("value")
       .then(function(data) {
@@ -399,9 +369,7 @@ class FirebaseHandler {
       const profitPerCompany = {};
       const accumprofitPerCompany = initAccumProfitPerCompany(totalFirmNumber);
       const roundArray = initRoundArray(totalFirmNumber);
-      return this.database
-        .ref(roomNum)
-        .child("on")
+      return getRoomRootRef(roomNum)
         .child("round")
         .once("value")
         .then(function(data) {
@@ -436,9 +404,7 @@ class FirebaseHandler {
     return (function loop(i) {
       if (i <= totalFirmNumber) {
         return new Promise((resolve, reject) => {
-          database
-            .ref(roomNum)
-            .child("on")
+          getRoomRootRef(roomNum)
             .child(`company_${i}`)
             .child("companyName")
             .once("value")
@@ -455,9 +421,7 @@ class FirebaseHandler {
   }
 
   isEndSession(roomNum, cb) {
-    return this.database
-      .ref(roomNum)
-      .child("on")
+    return getRoomRootRef(roomNum)
       .child("round")
       .child("endSession")
       .on("value", snap => {
@@ -468,9 +432,7 @@ class FirebaseHandler {
   getCompanyRoundStatusListener(roomNum, groupNum, cb) {
     console.log(roomNum);
     console.log(groupNum);
-    this.database
-      .ref(roomNum)
-      .child("on")
+    getRoomRootRef(roomNum)
       .child("round")
       .on("value", data => {
         const roundInfo = data.val();
