@@ -11,10 +11,6 @@ class BalanceSheet extends Component {
     cookies: instanceOf(Cookies).isRequired
   };
 
-  constructor(props) {
-    super(props);
-  }
-
   // Generate table for “.../game_start/Company Intro/Balance Sheet”
   // numeral(xyz).format("0,0") for thousand separators
   generateTable(title, contentArray) {
@@ -65,8 +61,8 @@ class BalanceSheet extends Component {
           ["Total Asset", totalAsset]
         ])}
         {this.generateTable("Liability", [
-          ["Note Payable", companyInfo.liabilitiesBorrwoing],
-          ["Interest Payable", companyInfo.liabilitiesBorrwoing],
+          ["Bond Payable", companyInfo.liabilitiesBorrwoing],
+          // ["Interest Payable", companyInfo.liabilitiesBorrwoing],
           ["Total Liabilities	", companyInfo.liabilitiesBorrwoing]
         ])}
         {this.generateTable("Equity", [

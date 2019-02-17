@@ -151,21 +151,22 @@ class GameStart extends Component {
                     groupNum={groupNum}
                     roomNum={roomNum}
                     currentRound={currentRound}
+                    marketType={marketType}
                   />
                 )}
               </div>
             </Grid.Column>
           </Grid.Row>
           <Grid.Row textAlign="center" centered>
-            <a className="ui yellow tag label">
+            <a style={{color: "#fff", backgroundColor: "#44D483"}} className="ui tag label">
               Room Num
               <Label.Detail>{roomNum}</Label.Detail>
             </a>
-            <a className="ui olive tag label">
+            <a className="ui teal tag label">
               Company
               <Label.Detail>{companyName}</Label.Detail>
             </a>
-            <a className="ui blue tag label">
+            <a style={{color: "#fff", backgroundColor: "#6ab8ff"}} className="ui tag label">
               Round
               <Label.Detail>{currentRound}</Label.Detail>
             </a>

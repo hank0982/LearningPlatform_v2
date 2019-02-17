@@ -7,6 +7,7 @@ class GameForm extends Component {
   static propTypes = {
     cookies: instanceOf(Cookies).isRequired
   };
+
   constructor(props) {
     super(props);
     this.state = {
@@ -14,13 +15,17 @@ class GameForm extends Component {
       companyRoundInfo: null,
       borrowing: "",
       returning: "",
-      decision: ""
+      decision: "",
+      isLeaderSubmitted: "undefined",
+      isLeader: "undefined",
+      phQuantity: "Quantity"
     };
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
   }
+
   componentWillMount() {
-    const { firebase, roomNum, groupNum, roomInfo } = this.props;
+    const { firebase, roomNum, groupNum, currentRound } = this.props;
     const that = this;
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
@@ -32,12 +37,42 @@ class GameForm extends Component {
         companyRoundInfo: data
       });
     });
+    firebase.isStackelberg(roomNum).then(isSta => {
+      if (isSta){
+        firebase.leaderSubmitted(roomNum, currentRound, data => {
+          console.log("Data is: " + data);
+          if (data === null) {
+            that.setState({
+              isLeaderSubmitted: false
+            });
+          } else {
+            that.setState({
+              isLeaderSubmitted: true
+            });
+          }
+        });
+        firebase.isLeader(roomNum, groupNum).then(bool => {
+          that.setState({
+            isLeader: bool
+          });
+        });
+        firebase.displayLeaderQ(roomNum, currentRound, q => {
+          if (q !== null) {
+            that.setState({
+              phQuantity: `The leader company submitted: ${q}`
+            });
+          }
+        });
+      }
+      }
+    )
+    
   }
 
   // Production Cost formula
   renderTotalCost() {
     let { companyInfo } = this.state;
-    console.log(companyInfo);
+    // console.log(companyInfo);
     if (companyInfo) {
       return (
         <Segment>
@@ -82,57 +117,88 @@ class GameForm extends Component {
   // When player inputs "Borrow",
   // set `this.state.borrowing` to what s/he types
   handleInputFields(e) {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
+    this.setState({ [e.target.name]: e.target.value });
     console.log(e.target.name + " changed to " + e.target.value);
   }
 
   submitDecision(e) {
     e.preventDefault();
-    const { borrowing, returning, decision } = this.state;
-    const { firebase, roomNum, groupNum, roundNum, currentRound } = this.props;
-    firebase
-      .pushCompanyDecision(
-        roomNum,
-        groupNum,
-        currentRound,
-        returning,
-        borrowing,
-        decision
-      )
-      .then(() => {
-        this.setState({
-          borrowing: "",
-          returning: "",
-          decision: ""
-        });
-        firebase.compareFirmNum(roomNum, currentRound).then(bool => {
-          console.log(bool);
-          if (bool) {
-            firebase
-              .calculateUnitPrice(roomNum, currentRound)
-              .then(() =>
-                firebase
-                  .calculateUnitCost(roomNum, currentRound)
-                  .then(() =>
-                    firebase
-                      .calculateProfit(roomNum, currentRound)
-                      .then(() =>
-                        firebase
-                          .calculateRevenue(roomNum, currentRound)
-                          .then(() => firebase.falsifyEndroundbutton(roomNum))
+    let {
+      borrowing,
+      returning,
+      decision,
+      companyInfo,
+      companyRoundInfo
+    } = this.state;
+    borrowing = parseInt(borrowing, 10);
+    returning = parseInt(returning, 10);
+    decision = parseInt(decision, 10);
+    const { firebase, roomNum, groupNum, currentRound } = this.props;
+
+    // CHECK IF RETURN/BORROWING SATISFIES REQUIREMENTS
+    // RETURN = this round's returning value = set by previous rounds
+    const mustReturn = companyRoundInfo ? companyRoundInfo.returning : 0;
+    // RETURN < CASH or bankrupt
+    if (mustReturn > companyInfo.assetCash) {
+      alert("bankrupt!");
+      return 0;
+    } else if (mustReturn === returning)
+      firebase
+        .pushCompanyDecision(
+          roomNum,
+          groupNum,
+          currentRound,
+          returning,
+          borrowing,
+          decision
+        )
+        .then(() => {
+          this.setState({
+            borrowing: "",
+            returning: "",
+            decision: ""
+          });
+          firebase.compareFirmNum(roomNum, currentRound).then(bool => {
+            console.log(bool);
+            if (bool) {
+              firebase
+                .calculateUnitPrice(roomNum, currentRound)
+                .then(() =>
+                  firebase
+                    .calculateUnitCost(roomNum, currentRound)
+                    .then(() =>
+                      firebase
+                        .calculateProfit(roomNum, currentRound)
+                        .then(() =>
+                          firebase.calculateRevenue(roomNum, currentRound).then(() =>{
+                            firebase
+                            .falsifyEndroundbutton(roomNum)
+                            .then(() =>
+                              firebase.calculateFutureReturn(
+                                roomNum,
+                                groupNum,
+                                currentRound
+                              )
+                            )
+                          })
+                        )
                       )
-                  )
-              );
-          }
+                    )
+                    
+                  }
+          });
         });
-      });
+    else alert("borrow or return does not satisfy!");
   }
 
   render() {
-    const { companyInfo, companyRoundInfo } = this.state;
-    console.log(companyRoundInfo);
+    const {
+      companyInfo,
+      companyRoundInfo,
+      isLeaderSubmitted,
+      isLeader
+    } = this.state;
+    // console.log(companyRoundInfo);
     return (
       <div>
         <Header as="h2" color="teal">
@@ -152,18 +218,18 @@ class GameForm extends Component {
           <Form>
             {/* Alter `companyInfo.liabilitiesBorrwoing` */}
             <Form.Field>
-              <label>Borrow</label>
+              <label>Issue Corporate Bond</label>
               <input
-                placeholder="Borrowing Amount (in USD)"
+                placeholder="Issuing Amount (in USD)"
                 name="borrowing"
                 value={this.state.borrowing}
                 onChange={this.handleInputFields}
               />
             </Form.Field>
             <Form.Field>
-              <label>Return</label>
+              <label>Bond Payment</label>
               <input
-                placeholder="Returning Amount (in USD)"
+                placeholder="Bound Amount (in USD)"
                 name="returning"
                 value={this.state.returning}
                 onChange={this.handleInputFields}
@@ -176,27 +242,32 @@ class GameForm extends Component {
         </Header>
         {(companyRoundInfo && companyRoundInfo.submit === false) ||
         !companyRoundInfo ? (
-          <Form>
-            <Form.Field>
-              <label>Quantity of Your Production</label>
-              <input
-                placeholder="Quantity"
-                name="decision"
-                value={this.state.decision}
-                onChange={this.handleInputFields}
-              />
-            </Form.Field>
-            <Button
-              size="tiny"
-              type="submit"
-              color="teal"
-              onClick={this.submitDecision}>
-              <i class="sign in icon" />
-              Submit!
-            </Button>
-          </Form>
+          isLeaderSubmitted === false && isLeader === false ? (
+            <Segment>Please wait for the leader company</Segment>
+          ) : (
+            <Form>
+              <Form.Field>
+                <label>Quantity of Your Production</label>
+                <input
+                  placeholder={this.state.phQuantity}
+                  name="decision"
+                  value={this.state.decision}
+                  onChange={this.handleInputFields}
+                />
+              </Form.Field>
+              <Button
+                size="tiny"
+                type="submit"
+                color="teal"
+                onClick={this.submitDecision}
+              >
+                <i class="sign in icon" />
+                Submit!
+              </Button>
+            </Form>
+          )
         ) : (
-          <Segment>Please Wait for other groups</Segment>
+          <Segment>Please wait for other groups to submit</Segment>
         )}
       </div>
     );
