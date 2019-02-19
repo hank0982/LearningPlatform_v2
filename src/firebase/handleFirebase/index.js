@@ -382,12 +382,12 @@ class FirebaseHandler {
     }
   }
 
-  calculateFutureReturn(roomNum, groupNum, roundNum) {
+  async calculateFutureReturn(roomNum, groupNum, roundNum) {
     const roundInfo = this.database // Simplifying a path for future use
       .ref(roomNum)
       .child("on")
       .child("round");
-    let currentRoundData = this.getData(
+    let currentRoundData = await this.getData(
       roundInfo.child(`round${roundNum}`).child(groupNum)
     );
 
@@ -395,7 +395,7 @@ class FirebaseHandler {
 
     let numBorrowing = currentRoundData.numBorrowing;
     let marketInterestRate = parseInt(
-      this.getData(
+      await this.getData(
         this.database
           .ref(roomNum)
           .child("on")
@@ -407,7 +407,7 @@ class FirebaseHandler {
     for (let i = 1; i < 4; i++) {
       // three rounds
       let returning = parseInt(
-        this.getData(
+        await this.getData(
           roundInfo
             .child(`round${roundNum + i}`)
             .child(groupNum)
@@ -417,7 +417,7 @@ class FirebaseHandler {
       );
       numBorrowing *= marketInterestRate;
       returning += numBorrowing;
-      roundInfo
+      await roundInfo
         .child(`round${roundNum + i}`)
         .child(groupNum)
         .set({ returning });
@@ -593,6 +593,26 @@ class FirebaseHandler {
           cb(null);
         }
       });
+  }
+
+  addMessageToDatabase(message) {
+    this.database
+      .ref(this.roomNum)
+      .child("on")
+      .child("console")
+      .push()
+      .set(message);
+  }
+
+  endRound(roomNum, roundNum) {
+    this.calculateRoundValue().then(function() {
+      this.database.ref(roomNum + "/on/round/endroundbutton").set(true);
+      this.addMessageToDatabase({
+        message: "End Round" + roundNum,
+        time: new Date().toLocaleString("en-GB", { timeZone: "Asia/Hong_Kong" })
+      });
+      this.database.ref(roomNum + "/on/round/endSession").set(true);
+    });
   }
 }
 export default FirebaseHandler;
