@@ -37,30 +37,36 @@ class GameForm extends Component {
         companyRoundInfo: data
       });
     });
-    firebase.leaderSubmitted(roomNum, currentRound, data => {
-      console.log("Data is: " + data);
-      if (data === null) {
-        that.setState({
-          isLeaderSubmitted: false
+    firebase.isStackelberg(roomNum).then(isSta => {
+      if (isSta){
+        firebase.leaderSubmitted(roomNum, currentRound, data => {
+          console.log("Data is: " + data);
+          if (data === null) {
+            that.setState({
+              isLeaderSubmitted: false
+            });
+          } else {
+            that.setState({
+              isLeaderSubmitted: true
+            });
+          }
         });
-      } else {
-        that.setState({
-          isLeaderSubmitted: true
+        firebase.isLeader(roomNum, groupNum).then(bool => {
+          that.setState({
+            isLeader: bool
+          });
+        });
+        firebase.displayLeaderQ(roomNum, currentRound, q => {
+          if (q !== null) {
+            that.setState({
+              phQuantity: `The leader company submitted: ${q}`
+            });
+          }
         });
       }
-    });
-    firebase.isLeader(roomNum, groupNum).then(bool => {
-      that.setState({
-        isLeader: bool
-      });
-    });
-    firebase.displayLeaderQ(roomNum, currentRound, q => {
-      if (q !== null) {
-        that.setState({
-          phQuantity: `The leader company submitted: ${q}`
-        });
       }
-    });
+    )
+    
   }
 
   // Production Cost formula
@@ -164,23 +170,22 @@ class GameForm extends Component {
                       firebase
                         .calculateProfit(roomNum, currentRound)
                         .then(() =>
-                          firebase
-                            .calculateRevenue(roomNum, currentRound)
+                          firebase.calculateRevenue(roomNum, currentRound).then(() =>{
+                            firebase
+                            .falsifyEndroundbutton(roomNum)
                             .then(() =>
-                              firebase
-                                .falsifyEndroundbutton(roomNum)
-                                .then(() =>
-                                  firebase.calculateFutureReturn(
-                                    roomNum,
-                                    groupNum,
-                                    currentRound
-                                  )
-                                )
+                              firebase.calculateFutureReturn(
+                                roomNum,
+                                groupNum,
+                                currentRound
+                              )
                             )
+                          })
                         )
+                      )
                     )
-                );
-            }
+                    
+                  }
           });
         });
     else alert("borrow or return does not satisfy!");
