@@ -184,7 +184,7 @@ class FirebaseHandler {
           .then(snap => {
             console.log(snap.numChildren());
             console.log(firmNum.val());
-            return snap.numChildren() === parseInt(firmNum.val(), 100);
+            return snap.numChildren() === parseInt(firmNum.val(), 10);
           });
       });
   }
