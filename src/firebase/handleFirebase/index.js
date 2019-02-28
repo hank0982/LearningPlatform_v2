@@ -208,6 +208,7 @@ class FirebaseHandler {
     var slope_v = parseFloat(await this.getData(roomInfo.child("slope")));
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
+    var companyQuantity_array = []
     for (var i = 0; i < firmNum_v; i++) {
       var companyQuantity_v = parseInt(
         await this.getData(
@@ -221,6 +222,7 @@ class FirebaseHandler {
         ),
         10
       );
+      companyQuantity_array.push(companyQuantity_v)
       totalQuantityInThisRound += companyQuantity_v;
     }
     unitPrice = constant_v + slope_v * totalQuantityInThisRound;
@@ -251,13 +253,14 @@ class FirebaseHandler {
           ),
           100
         );
+        console.log(constant_v + slope_v * companyQuantity_array[i-1])
         await that
           .getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .child(i)
           .update({
-            price: constant_v + slope_v * quantity
+            price: constant_v + slope_v * companyQuantity_array[i-1]
           });
       }
     }
