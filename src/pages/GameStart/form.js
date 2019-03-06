@@ -155,6 +155,10 @@ class GameForm extends Component {
     // RETURN = this round's returning value = set by previous rounds
     const mustReturn = companyRoundInfo ? companyRoundInfo.returning : 0;
     // RETURN < CASH or bankrupt
+    if(decision < companyInfo.minimum || decision > companyInfo.maximum){
+      alert("Please Check Production Capacity");
+      return 0;
+    }
     if (mustReturn > companyInfo.assetCash) {
       alert("bankrupt!");
       return 0;
@@ -269,9 +273,12 @@ class GameForm extends Component {
               <Form.Field>
                 <label>Quantity of Your Production</label>
                 <input
+                  type="number"
                   placeholder={this.state.phQuantity}
                   name="decision"
                   value={this.state.decision}
+                  max={parseFloat(this.state.companyInfo.maximum)}
+                  min={parseFloat(this.state.companyInfo.minimum)}
                   onChange={this.handleInputFields}
                 />
               </Form.Field>
