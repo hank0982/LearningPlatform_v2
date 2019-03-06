@@ -22,6 +22,19 @@ class GameForm extends Component {
     };
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
+    this.dirty = false;
+    console.log(this.dirty)
+    window.addEventListener("beforeunload", function (event) {
+        console.log(
+          "ssssssssssssssssssss"
+        );
+        
+        event.returnValue= this.dirty ? "If you leave this page you will lose your unsaved changes." : null;
+    })
+
+    window.onbeforeunload = function() {
+      
+    }
   }
 
   componentWillMount() {
@@ -38,6 +51,7 @@ class GameForm extends Component {
       });
     });
     firebase.isStackelberg(roomNum).then(isSta => {
+      console.log(isSta);
       if (isSta){
         firebase.leaderSubmitted(roomNum, currentRound, data => {
           console.log("Data is: " + data);
@@ -52,6 +66,7 @@ class GameForm extends Component {
           }
         });
         firebase.isLeader(roomNum, groupNum).then(bool => {
+          console.log(bool)
           that.setState({
             isLeader: bool
           });
@@ -123,6 +138,7 @@ class GameForm extends Component {
 
   submitDecision(e) {
     e.preventDefault();
+    var that = this;
     let {
       borrowing,
       returning,
@@ -159,6 +175,8 @@ class GameForm extends Component {
             decision: ""
           });
           firebase.compareFirmNum(roomNum, currentRound).then(bool => {
+            that.dirty = true;
+            console.log(that.dirty)
             console.log(bool);
             if (bool) {
               firebase
@@ -173,12 +191,14 @@ class GameForm extends Component {
                           firebase.calculateRevenue(roomNum, currentRound).then(() =>{
                             firebase
                             .falsifyEndroundbutton(roomNum)
-                            .then(() =>
-                              firebase.calculateFutureReturn(
-                                roomNum,
-                                groupNum,
-                                currentRound
-                              )
+                            .then(() => {
+                                that.dirty = false;
+                                // firebase.calculateFutureReturn(
+                                //   roomNum,
+                                //   groupNum,
+                                //   currentRound
+                                // )
+                              }
                             )
                           })
                         )

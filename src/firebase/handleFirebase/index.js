@@ -149,7 +149,7 @@ class FirebaseHandler {
       .child("roomInfo")
       .child("leader");
     var leaderNum_v = parseInt(await this.getData(leaderNum), 10);
-    return leaderNum_v === groupNum;
+    return leaderNum_v == groupNum;
   }
 
   async displayLeaderQ(roomNum, roundNum, cb) {
@@ -189,13 +189,17 @@ class FirebaseHandler {
       });
   }
 
-  getData(ref) {
+  getData(ref,defaultValue=null) {
     // Pass in a reference path and return a Promise
     return ref.once("value").then(snap => {
       if (!isNull(snap.val())) {
         return Promise.resolve(snap.val());
       } else {
-        return Promise.reject(new Error(ref + " is empty"));
+        if(isNull(defaultValue)){
+          return Promise.reject(new Error(ref + " is empty"));
+        }else{
+          return Promise.resolve(defaultValue);
+        }
       }
     });
   }
@@ -285,12 +289,23 @@ class FirebaseHandler {
       var c3_v = parseFloat(await this.getData(c3));
       var constant_v = parseFloat(await this.getData(constant));
       var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+      console.log(companyQuantity_v)
       var totalCost =
         c1_v * companyQuantity_v +
         c2_v * companyQuantity_v * companyQuantity_v +
         c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
         constant_v;
-      that
+      if(companyQuantity_v==0.0){
+        that
+        .getRoomRootRef(roomNum)
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .update({
+          unitCost:0
+        });
+      }else{
+        that
         .getRoomRootRef(roomNum)
         .child("round")
         .child(`round${roundNum}`)
@@ -298,6 +313,8 @@ class FirebaseHandler {
         .update({
           unitCost: totalCost / companyQuantity_v
         });
+      }
+      
     }
   }
 
@@ -405,12 +422,19 @@ class FirebaseHandler {
           roundInfo
             .child(`round${roundNum + i}`)
             .child(groupNum)
-            .child("returning")
+            .child("returning"),0
         ),
         10
       );
       numBorrowing *= marketInterestRate;
       returning += numBorrowing;
+      await roundInfo
+        .child(`round${roundNum + i}`)
+        .set({});
+      await roundInfo
+        .child(`round${roundNum + i}`)
+        .child(groupNum)
+        .set({});
       await roundInfo
         .child(`round${roundNum + i}`)
         .child(groupNum)
@@ -426,7 +450,7 @@ class FirebaseHandler {
       });
   }
 
-  getCompanyName(roomNum, groupNum) {
+  getCompanyName(roomNum, groupNum, defaultValue=null) {
     return this.getRoomRootRef(roomNum)
       .child("company_" + groupNum)
       .child("companyName")
@@ -435,7 +459,11 @@ class FirebaseHandler {
         if (!isNull(snap.val())) {
           return Promise.resolve(snap.val());
         } else {
-          return Promise.reject(new Error("Round Number is empty"));
+          if(!isNull(defaultValue)){
+            return Promise.reject(new Error("Round Number is empty"));
+          }else{
+            return Promise.resolve(defaultValue);
+          }
         }
       })
       .catch(err => {
