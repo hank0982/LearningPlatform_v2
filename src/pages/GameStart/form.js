@@ -49,38 +49,39 @@ class GameForm extends Component {
       that.setState({
         companyRoundInfo: data
       });
-    });
-    firebase.isStackelberg(roomNum).then(isSta => {
-      console.log(isSta);
-      if (isSta){
-        firebase.leaderSubmitted(roomNum, currentRound, data => {
-          console.log("Data is: " + data);
-          if (data === null) {
-            that.setState({
-              isLeaderSubmitted: false
-            });
-          } else {
-            that.setState({
-              isLeaderSubmitted: true
-            });
-          }
-        });
-        firebase.isLeader(roomNum, groupNum).then(bool => {
-          console.log(bool)
-          that.setState({
-            isLeader: bool
+      firebase.isStackelberg(roomNum).then(isSta => {
+        console.log(isSta);
+        if (isSta){
+          firebase.leaderSubmitted(roomNum, currentRound, data => {
+            console.log("Data is: " + data);
+            if (data === null) {
+              that.setState({
+                isLeaderSubmitted: false
+              });
+            } else {
+              that.setState({
+                isLeaderSubmitted: true
+              });
+            }
           });
-        });
-        firebase.displayLeaderQ(roomNum, currentRound, q => {
-          if (q !== null) {
+          firebase.isLeader(roomNum, groupNum).then(bool => {
+            console.log(bool)
             that.setState({
-              phQuantity: `The leader company submitted: ${q}`
+              isLeader: bool
             });
-          }
-        });
-      }
-      }
-    )
+          });
+          firebase.displayLeaderQ(roomNum, currentRound, q => {
+            if (q !== null) {
+              that.setState({
+                phQuantity: `The leader company submitted: ${q}`
+              });
+            }
+          });
+        }
+        }
+      )
+    });
+   
     
   }
 
@@ -166,7 +167,7 @@ class GameForm extends Component {
       firebase
         .pushCompanyDecision(
           roomNum,
-          groupNum,
+          groupNum,                                                                               
           currentRound,
           returning,
           borrowing,
