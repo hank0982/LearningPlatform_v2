@@ -13,6 +13,7 @@ import GeneralIntro from "./generalIntro";
 import CompanyIntro from "./companyIntro";
 import BusinessOpAnalysis from "./businessOpAnalysis";
 import CompetitorAnalysis from "./competitorAnalysis";
+import Advertising from "./advertising";
 import GameForm from "./form";
 
 class GameStart extends Component {
@@ -121,6 +122,14 @@ class GameStart extends Component {
               roomNum={roomNum}
               roundNum={endSession ? currentRound : currentRound - 1}
             />
+          </Tab.Pane>
+        )
+      },
+      {
+        menuItem: "Advertising",
+        render: () => (
+          <Tab.Pane style={{ height: "600px", overflowY: "scroll" }}>
+            <Advertising firebase={firebase} roomNum={roomNum} roundNum={endSession ? currentRound : currentRound - 1} />
           </Tab.Pane>
         )
       }

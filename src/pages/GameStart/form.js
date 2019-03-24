@@ -18,7 +18,8 @@ class GameForm extends Component {
       decision: "",
       isLeaderSubmitted: "undefined",
       isLeader: "undefined",
-      phQuantity: "Quantity"
+      phQuantity: "Quantity",
+      advertising: 0,
     };
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
@@ -32,14 +33,15 @@ class GameForm extends Component {
         event.returnValue= this.dirty ? "If you leave this page you will lose your unsaved changes." : null;
     })
 
-    window.onbeforeunload = function() {
-      
-    }
+    // window.onbeforeunload = function() {
+    // }
   }
 
   componentWillMount() {
     const { firebase, roomNum, groupNum, currentRound } = this.props;
+    const { database } = firebase
     const that = this;
+
     firebase.getCompanyListener(roomNum, groupNum, companyInfo => {
       that.setState({
         companyInfo // companyInfo: companyInfo
@@ -83,6 +85,14 @@ class GameForm extends Component {
     });
    
     
+    database.ref(`${roomNum}/on/roomInfo`).once('value', (snap) => {
+      let { advertisementImplement, productionDifferentiation } = snap.val()
+
+      this.setState({
+        advertisementImplement: advertisementImplement,
+        productionDifferentiation: productionDifferentiation
+      })
+    })
   }
 
   // Production Cost formula
@@ -145,12 +155,16 @@ class GameForm extends Component {
       returning,
       decision,
       companyInfo,
-      companyRoundInfo
+      companyRoundInfo,
+      advertising
     } = this.state;
     borrowing = parseInt(borrowing, 10);
     returning = parseInt(returning, 10);
     decision = parseInt(decision, 10);
+    advertising = parseInt(advertising, 10);
     const { firebase, roomNum, groupNum, currentRound } = this.props;
+
+    console.log(advertising, this.state);
 
     // CHECK IF RETURN/BORROWING SATISFIES REQUIREMENTS
     // RETURN = this round's returning value = set by previous rounds
@@ -171,13 +185,15 @@ class GameForm extends Component {
           currentRound,
           returning,
           borrowing,
-          decision
+          decision,
+          advertising
         )
         .then(() => {
           this.setState({
             borrowing: "",
             returning: "",
-            decision: ""
+            decision: "",
+            advertising: "",
           });
           firebase.compareFirmNum(roomNum, currentRound).then(bool => {
             that.dirty = true;
@@ -221,7 +237,9 @@ class GameForm extends Component {
       companyInfo,
       companyRoundInfo,
       isLeaderSubmitted,
-      isLeader
+      isLeader,
+      advertisementImplement,
+      productionDifferentiation
     } = this.state;
     // console.log(companyRoundInfo);
     return (
@@ -260,6 +278,18 @@ class GameForm extends Component {
                 onChange={this.handleInputFields}
               />
             </Form.Field>
+            {(advertisementImplement && productionDifferentiation)&&
+            <Form.Field>
+              <label>Advertising</label>
+              <input
+                placeholder="Advertising Amount (in USD)"
+                name="advertising"
+                value={this.state.advertising}
+                onChange={this.handleInputFields}
+                disabled={companyRoundInfo && companyRoundInfo.advertising !== undefined}
+              />
+            </Form.Field>
+            }
           </Form>
         </Header>
         <Header as="h2" color="teal">
