@@ -24,7 +24,7 @@ export default class Advertising extends React.PureComponent {
         let { companyName } = data[`company_${i}`]
         result.push({
           companyName: companyName,
-          advertising: round[`round${roundNum+1}`][i].advertising || 0
+          advertising: round[`round${roundNum+1}`][i] ? round[`round${roundNum+1}`][i].advertising || 0 : 0
         })
       }
 
