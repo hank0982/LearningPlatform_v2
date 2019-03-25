@@ -74,7 +74,7 @@ class FirebaseHandler {
     roundNum,
     returning,
     borrowing,
-    quantity
+    quantity,
   ) {
     return this.getRoomRootRef(roomNum)
       .child("round")
@@ -206,6 +206,7 @@ class FirebaseHandler {
 
   async calculateUnitPrice(roomNum, roundNum) {
     var that = this;
+    let { database } = this
     var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
     var totalQuantityInThisRound = 0;
     var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
@@ -213,59 +214,86 @@ class FirebaseHandler {
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
     var companyQuantity_array = []
-    for (var i = 0; i < firmNum_v; i++) {
-      var companyQuantity_v = parseInt(
-        await this.getData(
-          this.database
+    var gameInfo = await new Promise((resolve, reject) => {
+      database.ref(`${roomNum}/on`).once('value', (snap) => {
+        resolve(snap.val())
+      })
+    })
+    let currentRoundInfo = gameInfo.round[`round${roundNum}`]
+
+    if(gameInfo.roomInfo.productionDifferentiation === true) {
+      for(let i = 1; i < firmNum_v+1; i++) {
+        let companyStr = `company_${i}`
+        let ref = `${roomNum}/on/round/round${roundNum}/${i}`
+        let company = gameInfo[companyStr]
+        let unitPrice = parseFloat(company.constant)
+
+        for(let j = 0; j < gameInfo.roomInfo.firmNum - 1; j++) {
+          let otherCompany = gameInfo[`company_${(j + i) % gameInfo.roomInfo.firmNum + 1}`]
+          let otherCompanySubmit = currentRoundInfo[(j + i) % gameInfo.roomInfo.firmNum + 1]
+          unitPrice += otherCompany.slope * otherCompanySubmit.quantityProduction
+        }
+
+        database.ref(ref).update({
+          price: unitPrice
+        })
+      }
+    }
+    else {
+      for (var i = 0; i < firmNum_v; i++) {
+        var companyQuantity_v = parseInt(
+          await this.getData(
+            this.database
             .ref(roomNum)
             .child("on")
             .child("round")
             .child(`round${roundNum}`)
             .child(i + 1)
             .child("quantityProduction")
-        ),
-        10
-      );
-      companyQuantity_array.push(companyQuantity_v)
-      totalQuantityInThisRound += companyQuantity_v;
-    }
-    unitPrice = constant_v + slope_v * totalQuantityInThisRound;
-    if (unitPrice < 0) {
-      unitPrice = 0;
-    }
+          ),
+          10
+        );
+        companyQuantity_array.push(companyQuantity_v)
+        totalQuantityInThisRound += companyQuantity_v;
+      }
+      unitPrice = constant_v + slope_v * totalQuantityInThisRound;
+      if (unitPrice < 0) {
+        unitPrice = 0;
+      }
 
-    console.log(`Constant ${constant_v}`);
-    console.log(`Slope ${slope_v}`);
-    if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
-      that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .update({
-          price: unitPrice
-        });
-    } else {
-      for (i = 1; i <= firmNum_v; i++) {
-        var quantity = parseInt(
-          await this.getData(
-            that
+      console.log(`Constant ${constant_v}`);
+      console.log(`Slope ${slope_v}`);
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+        that
+          .getRoomRootRef(roomNum)
+          .child("round")
+          .child(`round${roundNum}`)
+          .update({
+            price: unitPrice
+          });
+      } else {
+        for (i = 1; i <= firmNum_v; i++) {
+          var quantity = parseInt(
+            await this.getData(
+              that
               .getRoomRootRef(roomNum)
               .child("round")
               .child(`round${roundNum}`)
               .child(i)
               .child("quantityProduction")
-          ),
-          100
-        );
-        console.log(constant_v + slope_v * companyQuantity_array[i-1])
-        await that
-          .getRoomRootRef(roomNum)
-          .child("round")
-          .child(`round${roundNum}`)
-          .child(i)
-          .update({
-            price: constant_v + slope_v * companyQuantity_array[i-1]
-          });
+            ),
+            100
+          );
+          console.log(constant_v + slope_v * companyQuantity_array[i-1])
+          await that
+            .getRoomRootRef(roomNum)
+            .child("round")
+            .child(`round${roundNum}`)
+            .child(i)
+            .update({
+              price: constant_v + slope_v * companyQuantity_array[i-1]
+            });
+        }
       }
     }
   }

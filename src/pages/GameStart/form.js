@@ -300,7 +300,7 @@ class GameForm extends Component {
                 name="borrowing"
                 value={this.state.borrowing}
                 onChange={this.handleInputFields}
-                disabled={!companyRoundInfo || companyRoundInfo.advertising === undefined}
+                disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
               />
             </Form.Field>
             <Form.Field>
@@ -310,7 +310,7 @@ class GameForm extends Component {
                 name="returning"
                 value={this.state.returning}
                 onChange={this.handleInputFields}
-                disabled={!companyRoundInfo || companyRoundInfo.advertising === undefined}
+                disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
               />
             </Form.Field>
             {(advertisementImplement && productionDifferentiation)&&
@@ -356,7 +356,7 @@ class GameForm extends Component {
                   max={parseFloat(this.state.companyInfo.maximum)}
                   min={parseFloat(this.state.companyInfo.minimum)}
                   onChange={this.handleInputFields}
-                  disabled={!companyRoundInfo || companyRoundInfo.advertising === undefined}
+                  disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
                 />
               </Form.Field>
               <Button
