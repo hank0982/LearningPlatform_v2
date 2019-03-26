@@ -74,13 +74,13 @@ class FirebaseHandler {
     roundNum,
     returning,
     borrowing,
-    quantity
+    quantity,
   ) {
     return this.getRoomRootRef(roomNum)
       .child("round")
       .child(`round${roundNum}`)
       .child(`${groupNum}`)
-      .set({
+      .update({
         isBorrowing: borrowing > 0,
         numBorrowing: borrowing,
         quantityProduction: quantity,
@@ -177,14 +177,24 @@ class FirebaseHandler {
       .child("firmNum")
       .once("value")
       .then(firmNum => {
+        let submitted = []
+        let firmNum_v = firmNum.val()
+        for(let i = 0; i < firmNum_v; i++) {
+          submitted.push(false)
+        }
+
         return this.getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .once("value")
           .then(snap => {
-            console.log(snap.numChildren());
-            console.log(firmNum.val());
-            return snap.numChildren() === parseInt(firmNum.val(), 10);
+            let data = snap.val()
+            for(let i = 1; i <= firmNum_v; i++) {
+              let roundCompany = data[i]
+              if(roundCompany && roundCompany.submit === true) submitted[i-1] = true
+            }
+
+            return submitted.reduce((p, n) => p &&n)
           });
       });
   }
@@ -206,6 +216,7 @@ class FirebaseHandler {
 
   async calculateUnitPrice(roomNum, roundNum) {
     var that = this;
+    let { database } = this
     var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
     var totalQuantityInThisRound = 0;
     var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
@@ -213,59 +224,95 @@ class FirebaseHandler {
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
     var companyQuantity_array = []
-    for (var i = 0; i < firmNum_v; i++) {
-      var companyQuantity_v = parseInt(
-        await this.getData(
-          this.database
+    var gameInfo = await new Promise((resolve, reject) => {
+      database.ref(`${roomNum}/on`).once('value', (snap) => {
+        resolve(snap.val())
+      })
+    })
+    let currentRoundInfo = gameInfo.round[`round${roundNum}`]
+    let { productionDifferentiation, advertisementImplement } = gameInfo.roomInfo
+
+    if(productionDifferentiation === true) {
+      for(let i = 1; i <= firmNum_v; i++) {
+        let companyStr = `company_${i}`
+        let ref = `${roomNum}/on/round/round${roundNum}/${i}`
+        let company = gameInfo[companyStr]
+        let { constant, slope, adv } = company
+        let { advertising } = currentRoundInfo[i]
+        let unitPrice = parseFloat(constant)
+
+        if(advertisementImplement === true)  unitPrice += advertising * parseFloat(adv)
+
+        for(let j = 1; j <= firmNum_v; j++) {
+          let company_1 = gameInfo[`company_${j}`]
+          let slope = parseFloat(company[`slope${j}`])
+          let { adv } = company_1
+          let { advertising, quantityProduction } = currentRoundInfo[j]
+
+          unitPrice += slope * quantityProduction
+          if(advertisementImplement === true && i !== j) unitPrice -= parseFloat(adv) * advertising
+        }
+
+        database.ref(ref).update({
+          price: unitPrice
+        })
+      }
+    }
+    else {
+      for (var i = 0; i < firmNum_v; i++) {
+        var companyQuantity_v = parseInt(
+          await this.getData(
+            this.database
             .ref(roomNum)
             .child("on")
             .child("round")
             .child(`round${roundNum}`)
             .child(i + 1)
             .child("quantityProduction")
-        ),
-        10
-      );
-      companyQuantity_array.push(companyQuantity_v)
-      totalQuantityInThisRound += companyQuantity_v;
-    }
-    unitPrice = constant_v + slope_v * totalQuantityInThisRound;
-    if (unitPrice < 0) {
-      unitPrice = 0;
-    }
+          ),
+          10
+        );
+        companyQuantity_array.push(companyQuantity_v)
+        totalQuantityInThisRound += companyQuantity_v;
+      }
+      unitPrice = constant_v + slope_v * totalQuantityInThisRound;
+      if (unitPrice < 0) {
+        unitPrice = 0;
+      }
 
-    console.log(`Constant ${constant_v}`);
-    console.log(`Slope ${slope_v}`);
-    if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
-      that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .update({
-          price: unitPrice
-        });
-    } else {
-      for (i = 1; i <= firmNum_v; i++) {
-        var quantity = parseInt(
-          await this.getData(
-            that
+      console.log(`Constant ${constant_v}`);
+      console.log(`Slope ${slope_v}`);
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+        that
+          .getRoomRootRef(roomNum)
+          .child("round")
+          .child(`round${roundNum}`)
+          .update({
+            price: unitPrice
+          });
+      } else {
+        for (i = 1; i <= firmNum_v; i++) {
+          var quantity = parseInt(
+            await this.getData(
+              that
               .getRoomRootRef(roomNum)
               .child("round")
               .child(`round${roundNum}`)
               .child(i)
               .child("quantityProduction")
-          ),
-          100
-        );
-        console.log(constant_v + slope_v * companyQuantity_array[i-1])
-        await that
-          .getRoomRootRef(roomNum)
-          .child("round")
-          .child(`round${roundNum}`)
-          .child(i)
-          .update({
-            price: constant_v + slope_v * companyQuantity_array[i-1]
-          });
+            ),
+            100
+          );
+          console.log(constant_v + slope_v * companyQuantity_array[i-1])
+          await that
+            .getRoomRootRef(roomNum)
+            .child("round")
+            .child(`round${roundNum}`)
+            .child(i)
+            .update({
+              price: constant_v + slope_v * companyQuantity_array[i-1]
+            });
+        }
       }
     }
   }
@@ -274,6 +321,8 @@ class FirebaseHandler {
     var that = this;
     var roomInfo = that.getRoomRootRef(roomNum).child("roomInfo");
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
+    var advertisementImplement = await this.getData(roomInfo.child("advertisementImplement"), false);
+    var productionDifferentiation = await this.getData(roomInfo.child("productionDifferentiation"), false);
     var companyNum = this.database.ref(roomNum).child("on");
 
     for (var i = 1; i <= firmNum_v; i++) {
@@ -287,17 +336,25 @@ class FirebaseHandler {
         .child(`round${roundNum}`)
         .child(i)
         .child("quantityProduction");
+      var advertising = that
+        .getRoomRootRef(roomNum)
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .child("advertising");
       var c1_v = parseFloat(await this.getData(c1));
       var c2_v = parseFloat(await this.getData(c2));
       var c3_v = parseFloat(await this.getData(c3));
       var constant_v = parseFloat(await this.getData(constant));
       var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+      var advertising_v = parseFloat(await this.getData(advertising, 0));
       console.log(companyQuantity_v)
       var totalCost =
         c1_v * companyQuantity_v +
         c2_v * companyQuantity_v * companyQuantity_v +
         c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
         constant_v;
+      if(advertisementImplement === true && productionDifferentiation === true) totalCost += advertising_v
       if(companyQuantity_v==0.0){
         that
         .getRoomRootRef(roomNum)
@@ -331,7 +388,7 @@ class FirebaseHandler {
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice;
     for (var i = 1; i <= firmNum_v; i++) {
-      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
         unitPrice = whichFirm.child("price");
       } else {
         unitPrice = whichFirm.child(i).child("price");
@@ -367,7 +424,7 @@ class FirebaseHandler {
     var unitPrice;
     var i = 1;
     for (; i <= firmNum_v; i++) {
-      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
         unitPrice = whichFirm.child("price");
       } else {
         unitPrice = whichFirm.child(i).child("price");
@@ -480,10 +537,11 @@ class FirebaseHandler {
     const revenuePerRounds = {};
     const profitPerRounds = {};
     const pricePerRounds = {};
+    var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
     return this.getRoomRootRef(roomNum)
       .child("round")
       .once("value")
-      .then(function(data) {
+      .then(async function(data) {
         const informationOfEachRound = data.val();
         for (var i = 1; i <= currentRound; i++) {
           console.log(informationOfEachRound["round" + i]);
@@ -493,9 +551,8 @@ class FirebaseHandler {
             informationOfEachRound["round" + i][groupNum].revenue;
           profitPerRounds[i] =
             informationOfEachRound["round" + i][groupNum].profit;
-          if (marketType === "monoply") {
-            pricePerRounds[i] =
-              informationOfEachRound["round" + i][groupNum].price;
+          if (marketType === "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
+            pricePerRounds[i] = informationOfEachRound["round" + i][groupNum].price;
           } else {
             pricePerRounds[i - 1] = informationOfEachRound["round" + i].price;
           }
