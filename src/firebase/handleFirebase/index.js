@@ -233,23 +233,24 @@ class FirebaseHandler {
     let { productionDifferentiation, advertisementImplement } = gameInfo.roomInfo
 
     if(productionDifferentiation === true) {
-      for(let i = 1; i < firmNum_v+1; i++) {
+      for(let i = 1; i <= firmNum_v; i++) {
         let companyStr = `company_${i}`
         let ref = `${roomNum}/on/round/round${roundNum}/${i}`
         let company = gameInfo[companyStr]
-        let { constant, slope } = company
+        let { constant, slope, adv } = company
         let { advertising } = currentRoundInfo[i]
         let unitPrice = parseFloat(constant)
 
-        if(advertisementImplement === true)  unitPrice -= advertising * parseFloat(slope)
+        if(advertisementImplement === true)  unitPrice += advertising * parseFloat(adv)
 
-        for(let j = 0; j < gameInfo.roomInfo.firmNum - 1; j++) {
-          let otherCompany = gameInfo[`company_${(j + i) % gameInfo.roomInfo.firmNum + 1}`]
-          let { slope } = otherCompany
-          let { advertising, quantityProduction } = currentRoundInfo[(j + i) % gameInfo.roomInfo.firmNum + 1]
-          unitPrice += parseFloat(slope) * quantityProduction
-          if(advertisementImplement === true) unitPrice += parseFloat(slope) * advertising
-          console.log(quantityProduction, advertising,  slope, j);
+        for(let j = 1; j <= firmNum_v; j++) {
+          let company_1 = gameInfo[`company_${j}`]
+          let slope = parseFloat(company[`slope${j}`])
+          let { adv } = company_1
+          let { advertising, quantityProduction } = currentRoundInfo[j]
+
+          unitPrice += slope * quantityProduction
+          if(advertisementImplement === true && i !== j) unitPrice -= parseFloat(adv) * advertising
         }
 
         database.ref(ref).update({
