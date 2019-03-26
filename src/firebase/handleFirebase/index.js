@@ -230,18 +230,26 @@ class FirebaseHandler {
       })
     })
     let currentRoundInfo = gameInfo.round[`round${roundNum}`]
+    let { productionDifferentiation, advertisementImplement } = gameInfo.roomInfo
 
-    if(gameInfo.roomInfo.productionDifferentiation === true) {
+    if(productionDifferentiation === true) {
       for(let i = 1; i < firmNum_v+1; i++) {
         let companyStr = `company_${i}`
         let ref = `${roomNum}/on/round/round${roundNum}/${i}`
         let company = gameInfo[companyStr]
-        let unitPrice = parseFloat(company.constant)
+        let { constant, slope } = company
+        let { advertising } = currentRoundInfo[i]
+        let unitPrice = parseFloat(constant)
+
+        if(advertisementImplement === true)  unitPrice -= advertising * parseFloat(slope)
 
         for(let j = 0; j < gameInfo.roomInfo.firmNum - 1; j++) {
           let otherCompany = gameInfo[`company_${(j + i) % gameInfo.roomInfo.firmNum + 1}`]
-          let otherCompanySubmit = currentRoundInfo[(j + i) % gameInfo.roomInfo.firmNum + 1]
-          unitPrice += otherCompany.slope * otherCompanySubmit.quantityProduction
+          let { slope } = otherCompany
+          let { advertising, quantityProduction } = currentRoundInfo[(j + i) % gameInfo.roomInfo.firmNum + 1]
+          unitPrice += parseFloat(slope) * quantityProduction
+          if(advertisementImplement === true) unitPrice += parseFloat(slope) * advertising
+          console.log(quantityProduction, advertising,  slope, j);
         }
 
         database.ref(ref).update({
@@ -312,6 +320,8 @@ class FirebaseHandler {
     var that = this;
     var roomInfo = that.getRoomRootRef(roomNum).child("roomInfo");
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
+    var advertisementImplement = await this.getData(roomInfo.child("advertisementImplement"), false);
+    var productionDifferentiation = await this.getData(roomInfo.child("productionDifferentiation"), false);
     var companyNum = this.database.ref(roomNum).child("on");
 
     for (var i = 1; i <= firmNum_v; i++) {
@@ -325,17 +335,25 @@ class FirebaseHandler {
         .child(`round${roundNum}`)
         .child(i)
         .child("quantityProduction");
+      var advertising = that
+        .getRoomRootRef(roomNum)
+        .child("round")
+        .child(`round${roundNum}`)
+        .child(i)
+        .child("advertising");
       var c1_v = parseFloat(await this.getData(c1));
       var c2_v = parseFloat(await this.getData(c2));
       var c3_v = parseFloat(await this.getData(c3));
       var constant_v = parseFloat(await this.getData(constant));
       var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+      var advertising_v = parseFloat(await this.getData(advertising, 0));
       console.log(companyQuantity_v)
       var totalCost =
         c1_v * companyQuantity_v +
         c2_v * companyQuantity_v * companyQuantity_v +
         c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
         constant_v;
+      if(advertisementImplement === true && productionDifferentiation === true) totalCost += advertising_v
       if(companyQuantity_v==0.0){
         that
         .getRoomRootRef(roomNum)
