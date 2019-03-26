@@ -80,7 +80,7 @@ class FirebaseHandler {
       .child("round")
       .child(`round${roundNum}`)
       .child(`${groupNum}`)
-      .set({
+      .update({
         isBorrowing: borrowing > 0,
         numBorrowing: borrowing,
         quantityProduction: quantity,
@@ -177,14 +177,24 @@ class FirebaseHandler {
       .child("firmNum")
       .once("value")
       .then(firmNum => {
+        let submitted = []
+        let firmNum_v = firmNum.val()
+        for(let i = 0; i < firmNum_v; i++) {
+          submitted.push(false)
+        }
+
         return this.getRoomRootRef(roomNum)
           .child("round")
           .child(`round${roundNum}`)
           .once("value")
           .then(snap => {
-            console.log(snap.numChildren());
-            console.log(firmNum.val());
-            return snap.numChildren() === parseInt(firmNum.val(), 10);
+            let data = snap.val()
+            for(let i = 1; i <= firmNum_v; i++) {
+              let roundCompany = data[i]
+              if(roundCompany && roundCompany.submit === true) submitted[i-1] = true
+            }
+
+            return submitted.reduce((p, n) => p &&n)
           });
       });
   }
@@ -359,7 +369,7 @@ class FirebaseHandler {
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice;
     for (var i = 1; i <= firmNum_v; i++) {
-      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
         unitPrice = whichFirm.child("price");
       } else {
         unitPrice = whichFirm.child(i).child("price");
@@ -395,7 +405,7 @@ class FirebaseHandler {
     var unitPrice;
     var i = 1;
     for (; i <= firmNum_v; i++) {
-      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
+      if ((await this.getData(roomInfo.child("marketType"))) !== "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
         unitPrice = whichFirm.child("price");
       } else {
         unitPrice = whichFirm.child(i).child("price");
@@ -508,10 +518,11 @@ class FirebaseHandler {
     const revenuePerRounds = {};
     const profitPerRounds = {};
     const pricePerRounds = {};
+    var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
     return this.getRoomRootRef(roomNum)
       .child("round")
       .once("value")
-      .then(function(data) {
+      .then(async function(data) {
         const informationOfEachRound = data.val();
         for (var i = 1; i <= currentRound; i++) {
           console.log(informationOfEachRound["round" + i]);
@@ -521,9 +532,8 @@ class FirebaseHandler {
             informationOfEachRound["round" + i][groupNum].revenue;
           profitPerRounds[i] =
             informationOfEachRound["round" + i][groupNum].profit;
-          if (marketType === "monoply") {
-            pricePerRounds[i] =
-              informationOfEachRound["round" + i][groupNum].price;
+          if (marketType === "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
+            pricePerRounds[i] = informationOfEachRound["round" + i][groupNum].price;
           } else {
             pricePerRounds[i - 1] = informationOfEachRound["round" + i].price;
           }
