@@ -241,16 +241,14 @@ class FirebaseHandler {
         let { advertising } = currentRoundInfo[i]
         let unitPrice = parseFloat(constant)
 
-        if(advertisementImplement === true)  unitPrice += advertising * parseFloat(adv)
-
         for(let j = 1; j <= firmNum_v; j++) {
           let company_1 = gameInfo[`company_${j}`]
           let slope = parseFloat(company[`slope${j}`])
-          let { adv } = company_1
+          let adver = parseFloat(company[`adver${j}`]) || 0
           let { advertising, quantityProduction } = currentRoundInfo[j]
 
           unitPrice += slope * quantityProduction
-          if(advertisementImplement === true && i !== j) unitPrice -= parseFloat(adv) * advertising
+          if(advertisementImplement === true) unitPrice -= (i !== j) ? parseFloat(adver) : -parseFloat(adver) * advertising
         }
 
         database.ref(ref).update({
