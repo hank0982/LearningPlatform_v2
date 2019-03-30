@@ -1,12 +1,56 @@
 import * as React from 'react';
 import { Table } from "semantic-ui-react";
+import ReactChartkick, { LineChart, ColumnChart  } from "react-chartkick";
+import Chart from "chart.js";
+ReactChartkick.addAdapter(Chart);
+
+class AdvertisingCahrt extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      data: []
+    }
+  }
+
+  componentDidMount() {
+    let { firebase, roomNum, index } = this.props
+    let { database } = firebase
+
+    database.ref(`${roomNum}/on/round/`).on('value', (snap) => {
+      let data = snap.val()
+      let result = []
+
+      if(data) {
+        let rounds = Object.keys(data).filter((key) => /round\d/.test(key)).map((key) => data[key])
+
+        rounds.forEach((round, roundIndex) => {
+          result.push([roundIndex+1, round[index] ? round[index].advertising : 0])
+        })
+      }
+
+      this.setState({ data: result })
+    })
+  }
+
+  render() {
+    let { name } = this.props
+    let { data } = this.state
+
+    console.log(data);
+
+    return (
+      <ColumnChart data={data} title={name} ytitle="Amount" xtitle="Round" />
+    )
+  }
+}
+
 
 export default class Advertising extends React.PureComponent {
   constructor(props) {
     super(props)
 
     this.state = {
-      costs: []
+      companyNames: [],
     }
   }
 
@@ -16,47 +60,29 @@ export default class Advertising extends React.PureComponent {
 
     database.ref(`${roomNum}/on`).once('value', (snap) => {
       let data = snap.val()
-      let { roomInfo, round } = data
+      let { roomInfo } = data
       let { firmNum } = roomInfo
       let result = []
 
       for(let i = 1; i <= firmNum; i++) {
         let { companyName } = data[`company_${i}`]
-        result.push({
-          companyName: companyName,
-          advertising: round[`round${roundNum+1}`][i] ? round[`round${roundNum+1}`][i].advertising || 0 : 0
-        })
+        result.push(companyName)
       }
 
-      this.setState({
-        costs: result
-      })
+      this.setState({ companyNames: result })
     })
   }
 
   render() {
-    let { costs } = this.state
+    let { companyNames } = this.state
 
     return (
       <div>
-      <table className="ui teal striped table">
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Company Name</Table.HeaderCell>
-            <Table.HeaderCell>Cost</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {
-            costs.map((cost, key) => (
-              <Table.Row key={cost.companyName+key}>
-                <Table.Cell width={10}>{cost.companyName}</Table.Cell>
-                <Table.Cell width={6}>{cost.advertising}</Table.Cell>
-              </Table.Row>
-            ))
-          }
-        </Table.Body>
-      </table>
+        {
+          companyNames.map((name, index) => {
+            return <AdvertisingCahrt key={name} name={name} index={index+1} {...this.props} />
+          })
+        }
       </div>
     )
   }
