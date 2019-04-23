@@ -334,11 +334,11 @@ class FirebaseHandler {
         let { quantityProduction, investment } = gameInfo.round[`round${roundNum}`][i]
         let cost = 0
         totalInvestment = totalInvestment || 0
-        if(totalInvestment > investmentCostB) {
+        if(totalInvestment > parseInt(investmentCostB, 10)) {
           cost = parseInt(cf3_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf3_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf3_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf3_slope3)
           totalInvestment = 0
         }
-        else if(totalInvestment > investmentCostA) {
+        else if(totalInvestment > parseInt(investmentCostA, 10)) {
           cost = parseInt(cf2_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf2_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf2_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf2_slope3)
           totalInvestment = 0
         }
