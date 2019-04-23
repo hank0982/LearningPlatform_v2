@@ -26,6 +26,7 @@ class GameForm extends Component {
     this.handleInputFields = this.handleInputFields.bind(this);
     this.submitDecision = this.submitDecision.bind(this);
     this.handleSendAdvertising = this.handleSendAdvertising.bind(this)
+    this.handleSendInvestment = this.handleSendInvestment.bind(this)
     this.dirty = false;
     console.log(this.dirty)
     // window.addEventListener("beforeunload", function (event) {
@@ -88,15 +89,30 @@ class GameForm extends Component {
     });
    
     database.ref(`${roomNum}/on/roomInfo`).once('value', (snap) => {
-      let { advertisementImplement, productionDifferentiation, firmNum } = snap.val()
+      let { advertisementImplement, productionDifferentiation, firmNum, increaseInCapacity } = snap.val()
 
       this.setState({
         advertisementImplement: advertisementImplement,
         productionDifferentiation: productionDifferentiation,
-        firmNum: parseInt(firmNum) || 0
+        firmNum: parseInt(firmNum) || 0,
+        increaseInCapacity: increaseInCapacity
       })
 
-      if(productionDifferentiation && advertisementImplement) {
+      if(increaseInCapacity) {
+        let submitted = []
+        for(let i = 1; i <=firmNum; i++) {
+          let ref = `${roomNum}/on/round/round${currentRound}/${i}/investment`
+
+          submitted.push(false)
+          database.ref(ref).on('value', (snap) => {
+            if(snap.val() !== null) submitted[i - 1] = true
+            this.setState({
+              allInvestmentSubmitted: submitted.reduce((p, n) => p && n)
+            })
+          })
+        }
+      }
+      else if(productionDifferentiation && advertisementImplement) {
         let submitted = []
         for(let i = 1; i <=firmNum; i++) {
           let ref = `${roomNum}/on/round/round${currentRound}/${i}/advertising`
@@ -163,6 +179,27 @@ class GameForm extends Component {
   handleInputFields(e) {
     this.setState({ [e.target.name]: e.target.value });
     console.log(e.target.name + " changed to " + e.target.value);
+  }
+
+  handleSendInvestment(e) {
+    let { firebase, roomNum, currentRound, groupNum } = this.props
+    let { investment } = this.state
+    let { database } = firebase
+    let value = parseInt(investment)
+
+    if(typeof value !== 'number') {
+      console.log('please input a number');
+      return
+    }
+
+    if(value < 0 || value > 50000) {
+      console.log('outof range');
+      return
+    } 
+
+    let ref = `${roomNum}/on/round/round${currentRound}/${parseInt(groupNum)}`
+
+    database.ref(ref).update({investment: value})
   }
 
   handleSendAdvertising(e) {
@@ -273,7 +310,9 @@ class GameForm extends Component {
       isLeader,
       advertisementImplement,
       productionDifferentiation,
-      allAdvertisingSubmitted
+      allAdvertisingSubmitted,
+      increaseInCapacity,
+      allInvestmentSubmitted,
     } = this.state;
     return (
       <div>
@@ -300,7 +339,7 @@ class GameForm extends Component {
                 name="borrowing"
                 value={this.state.borrowing}
                 onChange={this.handleInputFields}
-                disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
+                disabled={((!companyRoundInfo || companyRoundInfo.advertising === undefined) && (productionDifferentiation && advertisementImplement && !increaseInCapacity)) || ((!companyRoundInfo || companyRoundInfo.investment === undefined) && (increaseInCapacity))}
               />
             </Form.Field>
             <Form.Field>
@@ -310,10 +349,10 @@ class GameForm extends Component {
                 name="returning"
                 value={this.state.returning}
                 onChange={this.handleInputFields}
-                disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
+                disabled={((!companyRoundInfo || companyRoundInfo.advertising === undefined) && (productionDifferentiation && advertisementImplement && !increaseInCapacity)) || ((!companyRoundInfo || companyRoundInfo.investment === undefined) && (increaseInCapacity))}
               />
             </Form.Field>
-            {(advertisementImplement && productionDifferentiation)&&
+            {(advertisementImplement && productionDifferentiation && !increaseInCapacity)&&
             <Form.Field>
               <label>Advertising</label>
               <div style={{display: 'flex'}}>
@@ -337,6 +376,30 @@ class GameForm extends Component {
               </div>
             </Form.Field>
             }
+            {(increaseInCapacity)&&
+            <Form.Field>
+              <label>R&D Expense</label>
+              <div style={{display: 'flex'}}>
+                <input
+                  placeholder="Investment Amount (in USD)"
+                  name="investment"
+                  value={this.state.investment}
+                  onChange={this.handleInputFields}
+                  disabled={companyRoundInfo && companyRoundInfo.investment !== undefined || companyRoundInfo.submit === true}
+                />
+                <Button
+                  size="tiny"
+                  type="submit"
+                  color="teal"
+                  onClick={this.handleSendInvestment}
+                  disabled={companyRoundInfo && companyRoundInfo.investment !== undefined || companyRoundInfo.submit === true}
+                >
+                  <i class="sign in icon" />
+                  Send Investment
+                </Button>
+              </div>
+            </Form.Field>
+            }
           </Form>
         </Header>
         <Header as="h2" color="teal">
@@ -356,7 +419,7 @@ class GameForm extends Component {
                   max={parseFloat(this.state.companyInfo.maximum)}
                   min={parseFloat(this.state.companyInfo.minimum)}
                   onChange={this.handleInputFields}
-                  disabled={(!companyRoundInfo || companyRoundInfo.advertising === undefined) && productionDifferentiation && advertisementImplement}
+                  disabled={((!companyRoundInfo || companyRoundInfo.advertising === undefined) && (productionDifferentiation && advertisementImplement && !increaseInCapacity)) || ((!companyRoundInfo || companyRoundInfo.investment === undefined) && (increaseInCapacity))}
                 />
               </Form.Field>
               <Button
@@ -364,13 +427,16 @@ class GameForm extends Component {
                 type="submit"
                 color="teal"
                 onClick={this.submitDecision}
-                disabled={advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted}
+                disabled={(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted) || (increaseInCapacity && !allInvestmentSubmitted)}
               >
                 <i class="sign in icon" />
                 Submit!
               </Button>
-              {(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted) &&
+              {(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted && !increaseInCapacity) &&
                 <label style={{marginLeft: 10}}>Waiting for other groups submit thire Advertising</label>
+              }
+              {(increaseInCapacity) &&
+                <label style={{marginLeft: 10}}>Waiting for other groups submit thire Investment</label>
               }
             </Form>
           )
