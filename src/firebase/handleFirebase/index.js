@@ -317,62 +317,92 @@ class FirebaseHandler {
 
   async calculateUnitCost(roomNum, roundNum) {
     var that = this;
+    let { database } = this
     var roomInfo = that.getRoomRootRef(roomNum).child("roomInfo");
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
-    var advertisementImplement = await this.getData(roomInfo.child("advertisementImplement"), false);
-    var productionDifferentiation = await this.getData(roomInfo.child("productionDifferentiation"), false);
     var companyNum = this.database.ref(roomNum).child("on");
+    var gameInfo = await new Promise((resolve, reject) => {
+      database.ref(`${roomNum}/on`).once('value', (snap) => {
+        resolve(snap.val())
+      })
+    })
+    let { productionDifferentiation, advertisementImplement, increaseInCapacity, investmentCostA, investmentCostB } = gameInfo.roomInfo
 
-    for (var i = 1; i <= firmNum_v; i++) {
-      var c1 = companyNum.child(`company_${i}`).child("coefficientOne");
-      var c2 = companyNum.child(`company_${i}`).child("coefficientTwo");
-      var c3 = companyNum.child(`company_${i}`).child("coefficientThree");
-      var constant = companyNum.child(`company_${i}`).child("constant"); // not the previous constant!
-      var companyQuantity = that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .child(i)
-        .child("quantityProduction");
-      var advertising = that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .child(i)
-        .child("advertising");
-      var c1_v = parseFloat(await this.getData(c1));
-      var c2_v = parseFloat(await this.getData(c2));
-      var c3_v = parseFloat(await this.getData(c3));
-      var constant_v = parseFloat(await this.getData(constant));
-      var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
-      var advertising_v = parseFloat(await this.getData(advertising, 0));
-      console.log(companyQuantity_v)
-      var totalCost =
-        c1_v * companyQuantity_v +
-        c2_v * companyQuantity_v * companyQuantity_v +
-        c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
-        constant_v;
-      if(advertisementImplement === true && productionDifferentiation === true) totalCost += advertising_v
-      if(companyQuantity_v==0.0){
-        that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .child(i)
-        .update({
-          unitCost:0
-        });
-      }else{
-        that
-        .getRoomRootRef(roomNum)
-        .child("round")
-        .child(`round${roundNum}`)
-        .child(i)
-        .update({
-          unitCost: totalCost / companyQuantity_v
-        });
+    if(increaseInCapacity) {
+      for (var i = 1; i <= firmNum_v; i++) {
+        let { cf1_constant, cf1_slope1, cf1_slope2, cf1_slope3, cf2_constant, cf2_slope1, cf2_slope2, cf2_slope3, cf3_constant, cf3_slope1, cf3_slope2, cf3_slope3, totalInvestment } = gameInfo[`company_${i}`]
+        let { quantityProduction, investment } = gameInfo.round[`round${roundNum}`][i]
+        let cost = 0
+        totalInvestment = totalInvestment || 0
+        if(totalInvestment > investmentCostB) {
+          cost = parseInt(cf3_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf3_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf3_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf3_slope3)
+          totalInvestment = 0
+        }
+        else if(totalInvestment > investmentCostA) {
+          cost = parseInt(cf2_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf2_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf2_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf2_slope3)
+          totalInvestment = 0
+        }
+        else {
+          cost = parseInt(cf1_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf1_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf1_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf1_slope3)
+        }
+
+        totalInvestment +=  parseInt(investment, 10)
+
+        database.ref(`${roomNum}/on/round/round${roundNum}/${i}`).update({unitCost: cost})
+        database.ref(`${roomNum}/on/company_${i}`).update({totalInvestment: totalInvestment})
       }
-      
+    }
+    else {
+      for (var i = 1; i <= firmNum_v; i++) {
+        var c1 = companyNum.child(`company_${i}`).child("coefficientOne");
+        var c2 = companyNum.child(`company_${i}`).child("coefficientTwo");
+        var c3 = companyNum.child(`company_${i}`).child("coefficientThree");
+        var constant = companyNum.child(`company_${i}`).child("constant"); // not the previous constant!
+        var companyQuantity = that
+          .getRoomRootRef(roomNum)
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i)
+          .child("quantityProduction");
+        var advertising = that
+          .getRoomRootRef(roomNum)
+          .child("round")
+          .child(`round${roundNum}`)
+          .child(i)
+          .child("advertising");
+        var c1_v = parseFloat(await this.getData(c1));
+        var c2_v = parseFloat(await this.getData(c2));
+        var c3_v = parseFloat(await this.getData(c3));
+        var constant_v = parseFloat(await this.getData(constant));
+        var companyQuantity_v = parseFloat(await this.getData(companyQuantity));
+        var advertising_v = parseFloat(await this.getData(advertising, 0));
+        console.log(companyQuantity_v)
+        var totalCost =
+          c1_v * companyQuantity_v +
+          c2_v * companyQuantity_v * companyQuantity_v +
+          c3_v * companyQuantity_v * companyQuantity_v * companyQuantity_v +
+          constant_v;
+        if(advertisementImplement === true && productionDifferentiation === true) totalCost += advertising_v
+        if(companyQuantity_v==0.0){
+          that
+            .getRoomRootRef(roomNum)
+            .child("round")
+            .child(`round${roundNum}`)
+            .child(i)
+            .update({
+              unitCost:0
+            });
+        }else{
+          that
+            .getRoomRootRef(roomNum)
+            .child("round")
+            .child(`round${roundNum}`)
+            .child(i)
+            .update({
+              unitCost: totalCost / companyQuantity_v
+            });
+        }
+      }
     }
   }
 
