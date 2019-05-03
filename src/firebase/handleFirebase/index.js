@@ -330,20 +330,20 @@ class FirebaseHandler {
 
     if(increaseInCapacity) {
       for (var i = 1; i <= firmNum_v; i++) {
-        let { cf1_constant, cf1_slope1, cf1_slope2, cf1_slope3, cf2_constant, cf2_slope1, cf2_slope2, cf2_slope3, cf3_constant, cf3_slope1, cf3_slope2, cf3_slope3, totalInvestment } = gameInfo[`company_${i}`]
+        let { cf1_const, cf1_slope1, cf1_slope2, cf1_slope3, cf2_const, cf2_slope1, cf2_slope2, cf2_slope3, cf3_const, cf3_slope1, cf3_slope2, cf3_slope3, totalInvestment } = gameInfo[`company_${i}`]
         let { quantityProduction, investment } = gameInfo.round[`round${roundNum}`][i]
         let cost = 0
         totalInvestment = totalInvestment || 0
         if(totalInvestment > parseInt(investmentCostB, 10)) {
-          cost = parseInt(cf3_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf3_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf3_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf3_slope3)
+          cost = parseInt(cf3_const, 10)+parseInt(quantityProduction, 10) * parseFloat(cf3_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf3_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf3_slope3)
           totalInvestment = 0
         }
         else if(totalInvestment > parseInt(investmentCostA, 10)) {
-          cost = parseInt(cf2_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf2_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf2_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf2_slope3)
+          cost = parseInt(cf2_const, 10)+parseInt(quantityProduction, 10) * parseFloat(cf2_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf2_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf2_slope3)
           totalInvestment = 0
         }
         else {
-          cost = parseInt(cf1_constant, 10)+parseInt(quantityProduction, 10) * parseFloat(cf1_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf1_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf1_slope3)
+          cost = parseInt(cf1_const, 10)+parseInt(quantityProduction, 10) * parseFloat(cf1_slope1) + Math.pow(parseInt(quantityProduction, 10), 2) * parseFloat(cf1_slope2) + Math.pow(parseInt(quantityProduction, 10), 3) * parseFloat(cf1_slope3)
         }
 
         totalInvestment +=  parseInt(investment, 10)
