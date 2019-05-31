@@ -224,7 +224,7 @@ class FirebaseHandler {
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
     var companyQuantity_array = []
-    var gameInfo = await new Promise((resolve, reject) => {
+    var gameInfo = await new Promise((resolve) => {
       database.ref(`${roomNum}/on`).once('value', (snap) => {
         resolve(snap.val())
       })
@@ -237,12 +237,10 @@ class FirebaseHandler {
         let companyStr = `company_${i}`
         let ref = `${roomNum}/on/round/round${roundNum}/${i}`
         let company = gameInfo[companyStr]
-        let { constant, slope, adv } = company
-        let { advertising } = currentRoundInfo[i]
-        let unitPrice = parseFloat(constant)
+        let { dconstant } = company
+        let unitPrice = parseFloat(dconstant)
 
         for(let j = 1; j <= firmNum_v; j++) {
-          let company_1 = gameInfo[`company_${j}`]
           let slope = parseFloat(company[`slope${j}`])
           let adver = parseFloat(company[`adver${j}`]) || 0
           let { advertising, quantityProduction } = currentRoundInfo[j]
@@ -278,8 +276,6 @@ class FirebaseHandler {
         unitPrice = 0;
       }
 
-      console.log(`Constant ${constant_v}`);
-      console.log(`Slope ${slope_v}`);
       if ((await this.getData(roomInfo.child("marketType"))) !== "monoply") {
         that
           .getRoomRootRef(roomNum)
@@ -290,18 +286,6 @@ class FirebaseHandler {
           });
       } else {
         for (i = 1; i <= firmNum_v; i++) {
-          var quantity = parseInt(
-            await this.getData(
-              that
-              .getRoomRootRef(roomNum)
-              .child("round")
-              .child(`round${roundNum}`)
-              .child(i)
-              .child("quantityProduction")
-            ),
-            100
-          );
-          console.log(constant_v + slope_v * companyQuantity_array[i-1])
           await that
             .getRoomRootRef(roomNum)
             .child("round")
@@ -321,7 +305,7 @@ class FirebaseHandler {
     var roomInfo = that.getRoomRootRef(roomNum).child("roomInfo");
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var companyNum = this.database.ref(roomNum).child("on");
-    var gameInfo = await new Promise((resolve, reject) => {
+    var gameInfo = await new Promise((resolve) => {
       database.ref(`${roomNum}/on`).once('value', (snap) => {
         resolve(snap.val())
       })
@@ -645,11 +629,10 @@ class FirebaseHandler {
 
   getFirmNames(roomNum, totalFirmNumber) {
     var that = this;
-    const database = this.database;
     const nameList = {};
     return (function loop(i) {
       if (i <= totalFirmNumber) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           that
             .getRoomRootRef(roomNum)
             .child(`company_${i}`)
