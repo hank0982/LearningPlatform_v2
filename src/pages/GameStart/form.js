@@ -429,7 +429,7 @@ class GameForm extends Component {
                 onClick={this.submitDecision}
                 disabled={(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted) || (increaseInCapacity && !allInvestmentSubmitted)}
               >
-                <i class="sign in icon" />
+                <i className="sign in icon" />
                 Submit!
               </Button>
               {(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted && !increaseInCapacity) &&
