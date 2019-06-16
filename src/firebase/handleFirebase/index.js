@@ -550,11 +550,13 @@ class FirebaseHandler {
     const profitPerRounds = {};
     const pricePerRounds = {};
     var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
+    const that = this;
     return this.getRoomRootRef(roomNum)
       .child("round")
       .once("value")
       .then(async function(data) {
         const informationOfEachRound = data.val();
+        console.log(informationOfEachRound)
         for (var i = 1; i <= currentRound; i++) {
           console.log(informationOfEachRound["round" + i]);
           unitCostPerRounds[i] =
@@ -563,7 +565,9 @@ class FirebaseHandler {
             informationOfEachRound["round" + i][groupNum].revenue;
           profitPerRounds[i] =
             informationOfEachRound["round" + i][groupNum].profit;
-          if (marketType === "monoply" && (await this.getData(roomInfo.child('productionDifferentiation'))) === false) {
+          const isProductDiffer = await that.getData(roomInfo.child('productionDifferentiation'));
+          console.log(isProductDiffer);
+          if (marketType === "monoply" && (isProductDiffer === false)) {
             pricePerRounds[i] = informationOfEachRound["round" + i][groupNum].price;
           } else {
             pricePerRounds[i - 1] = informationOfEachRound["round" + i].price;

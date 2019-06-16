@@ -433,10 +433,10 @@ class GameForm extends Component {
                 Submit!
               </Button>
               {(advertisementImplement && productionDifferentiation && !allAdvertisingSubmitted && !increaseInCapacity) &&
-                <label style={{marginLeft: 10}}>Waiting for other groups submit thire Advertising</label>
+                <label style={{marginLeft: 10}}>Waiting for other groups submit thier Advertising</label>
               }
               {(increaseInCapacity) &&
-                <label style={{marginLeft: 10}}>Waiting for other groups submit thire Investment</label>
+                <label style={{marginLeft: 10}}>Waiting for other groups submit thier Investment</label>
               }
             </Form>
           )
