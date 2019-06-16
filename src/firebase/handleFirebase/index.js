@@ -219,7 +219,7 @@ class FirebaseHandler {
     let { database } = this
     var roomInfo = this.getRoomRootRef(roomNum).child("roomInfo");
     var totalQuantityInThisRound = 0;
-    var constant_v = parseFloat(await this.getData(roomInfo.child("demandConstant")));
+    var constant_v = parseFloat(await this.getData(roomInfo.child("constant")));
     var slope_v = parseFloat(await this.getData(roomInfo.child("slope")));
     var firmNum_v = parseInt(await this.getData(roomInfo.child("firmNum")), 10);
     var unitPrice = 0;
