@@ -604,23 +604,26 @@ class FirebaseHandler {
       return this.getRoomRootRef(roomNum)
         .child("round")
         .once("value")
-        .then(function(data) {
-          const informationOfEachRound = data.val();
+        .then(async function(data) {
+          const informationOfEachRound = await data.val();
+          console.log(informationOfEachRound);
           for (var i = 1; i <= currentRound; i++) {
             for (var t = 1; t <= parseInt(totalFirmNumber, 10); t++) {
-              roundArray[nameList[t]][i] = parseInt(
-                informationOfEachRound["round" + i][t].quantityProduction,
-                10
-              );
-              if (i === currentRound) {
-                profitPerCompany[nameList[t]] = parseFloat(
-                  informationOfEachRound["round" + i][t].profit
-                );
+              if(informationOfEachRound["round" + i] != undefined && informationOfEachRound["round" + i][t] != undefined){
+                  roundArray[nameList[t]][i] = parseInt(
+                    informationOfEachRound["round" + i][t].quantityProduction,
+                    10
+                  );
+                  if (i === currentRound) {
+                    profitPerCompany[nameList[t]] = parseFloat(
+                      informationOfEachRound["round" + i][t].profit
+                    );
+                  }
+                  accumprofitPerCompany[nameList[t]] =
+                    accumprofitPerCompany[nameList[t]] +
+                    parseFloat(informationOfEachRound["round" + i][t].profit);
+                }
               }
-              accumprofitPerCompany[nameList[t]] =
-                accumprofitPerCompany[nameList[t]] +
-                parseFloat(informationOfEachRound["round" + i][t].profit);
-            }
           }
           return {
             profitPerCompany,
