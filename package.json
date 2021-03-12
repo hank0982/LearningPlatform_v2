@@ -41,7 +41,7 @@
         "react": "^16.4.2",
         "react-chartkick": "^0.3.0",
         "react-cookie": "^3.0.8",
-        "react-dev-utils": "^5.0.2",
+        "react-dev-utils": "^11.0.4",
         "react-dom": "^16.4.2",
         "react-intl": "^2.4.0",
         "react-router-dom": "^4.3.1",
